@@ -1,1 +1,3 @@
 *.log
+demo/dbt-spark-demo_files/
+demo/.user.yml
