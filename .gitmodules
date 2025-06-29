@@ -1,0 +1,3 @@
+[submodule "dbt-spark"]
+	path = dbt-spark
+	url = https://github.com/VincentChong123/dbt-spark

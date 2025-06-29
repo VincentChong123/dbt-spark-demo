@@ -1,0 +1,32 @@
+# tests/unit/test_transactions.yml
+
+version: 2
+unit_tests:
+  - name: test_currency_usd
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 1, amount: 100, currency: 'USD', status: 'ACTIVE'}
+    expect:
+      rows:
+        - {id: 1, amount_usd: 100, currency: 'USD', branch_marker: "USD_BRANCH"}
+
+  - name: test_currency_sgd
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 2, amount: 100, currency: 'SGD', status: 'ACTIVE'}
+    expect:
+      rows:
+        - {id: 2, amount_usd: 74, branch_marker: "SGD_BRANCH"}
+
+  - name: test_inactive
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 2, amount: 100, currency: 'SGD', status: 'INACTIVE'}
+    expect: 
+      rows: []

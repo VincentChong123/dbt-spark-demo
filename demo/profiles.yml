@@ -1,0 +1,13 @@
+send_anonymous_usage_stats: false
+
+dbt_spark_demo_prj:
+  outputs:
+    spark:
+      type: spark
+      method: thrift
+      host: dbt-spark3-thrift
+      port: 10000
+      schema: default
+      connect_timeout: 30
+      authentication: NONE
+  target: spark

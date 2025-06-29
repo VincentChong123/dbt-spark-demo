@@ -1,0 +1,32 @@
+services:
+  dbt:
+    build:
+      context: .
+      dockerfile: dbt.Dockerfile
+      args:
+        py_version: "3.11.2"
+        commit_ref: "main"
+        dbt_third_party: ""  # set to e.g. dbt-trino if needed
+    image: custom-dbt:latest
+    # container_name: dbt-core
+    entrypoint: ["/bin/bash"]
+    healthcheck:
+      test: ["CMD", "dbt", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stdin_open: true
+    tty: true
+    ports:
+      - "8888-8889:8888-8889"
+      - "8080:8080" 
+    volumes:
+      - ../:/usr/app/
+    working_dir: /usr/app/dbt      
+    networks:
+      - shared
+
+networks:
+  shared:
+    external: true
+    name: my_shared_network

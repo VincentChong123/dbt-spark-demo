@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-06-29">
+
+<title>Demo of testing ETL pipeline using DBT and spark</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="dbt-spark-demo_files/libs/clipboard/clipboard.min.js"></script>
+<script src="dbt-spark-demo_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="dbt-spark-demo_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="dbt-spark-demo_files/libs/quarto-html/popper.min.js"></script>
+<script src="dbt-spark-demo_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="dbt-spark-demo_files/libs/quarto-html/anchor.min.js"></script>
+<link href="dbt-spark-demo_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="dbt-spark-demo_files/libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="dbt-spark-demo_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="dbt-spark-demo_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="dbt-spark-demo_files/libs/bootstrap/bootstrap-57de619f20ea3c00f7e8a542266039f8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="dbt-spark-demo_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="dbt-spark-demo_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="dbt-spark-demo_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <ul>
+  <li><a href="#project-file-structure" id="toc-project-file-structure" class="nav-link" data-scroll-target="#project-file-structure"><span class="header-section-number">1.1</span> Project file structure</a></li>
+  </ul></li>
+  <li><a href="#environment-setup" id="toc-environment-setup" class="nav-link" data-scroll-target="#environment-setup"><span class="header-section-number">2</span> Environment setup</a>
+  <ul>
+  <li><a href="#docker" id="toc-docker" class="nav-link" data-scroll-target="#docker"><span class="header-section-number">2.1</span> Docker</a>
+  <ul class="collapse">
+  <li><a href="#shared-network-for-docker-containers" id="toc-shared-network-for-docker-containers" class="nav-link" data-scroll-target="#shared-network-for-docker-containers"><span class="header-section-number">2.1.1</span> Shared network for docker containers</a></li>
+  </ul></li>
+  <li><a href="#install-jupyter-notebook-for-running-this-demo-in-notebook" id="toc-install-jupyter-notebook-for-running-this-demo-in-notebook" class="nav-link" data-scroll-target="#install-jupyter-notebook-for-running-this-demo-in-notebook"><span class="header-section-number">2.2</span> Install jupyter notebook for running this demo in notebook</a>
+  <ul class="collapse">
+  <li><a href="#connection-to-read-table-in-hive-meta-data-store" id="toc-connection-to-read-table-in-hive-meta-data-store" class="nav-link" data-scroll-target="#connection-to-read-table-in-hive-meta-data-store"><span class="header-section-number">2.2.1</span> Connection to read table in Hive meta-data store</a></li>
+  </ul></li>
+  <li><a href="#variables" id="toc-variables" class="nav-link" data-scroll-target="#variables"><span class="header-section-number">2.3</span> Variables</a></li>
+  <li><a href="#helper-codes" id="toc-helper-codes" class="nav-link" data-scroll-target="#helper-codes"><span class="header-section-number">2.4</span> Helper codes</a></li>
+  <li><a href="#dbt" id="toc-dbt" class="nav-link" data-scroll-target="#dbt"><span class="header-section-number">2.5</span> DBT</a></li>
+  <li><a href="#verify-dbt-setup" id="toc-verify-dbt-setup" class="nav-link" data-scroll-target="#verify-dbt-setup"><span class="header-section-number">2.6</span> Verify DBT setup</a>
+  <ul class="collapse">
+  <li><a href="#profiles.yml" id="toc-profiles.yml" class="nav-link" data-scroll-target="#profiles.yml"><span class="header-section-number">2.6.1</span> profiles.yml</a></li>
+  <li><a href="#dbt_project.yml" id="toc-dbt_project.yml" class="nav-link" data-scroll-target="#dbt_project.yml"><span class="header-section-number">2.6.2</span> dbt_project.yml</a></li>
+  <li><a href="#dbt-debug" id="toc-dbt-debug" class="nav-link" data-scroll-target="#dbt-debug"><span class="header-section-number">2.6.3</span> dbt debug</a></li>
+  </ul></li>
+  <li><a href="#dbt-command-comparisons" id="toc-dbt-command-comparisons" class="nav-link" data-scroll-target="#dbt-command-comparisons"><span class="header-section-number">2.7</span> dbt command comparisons</a></li>
+  </ul></li>
+  <li><a href="#prepare-sql" id="toc-prepare-sql" class="nav-link" data-scroll-target="#prepare-sql"><span class="header-section-number">3</span> Prepare SQL</a>
+  <ul>
+  <li><a href="#read-dbt-input-csv" id="toc-read-dbt-input-csv" class="nav-link" data-scroll-target="#read-dbt-input-csv"><span class="header-section-number">3.1</span> Read dbt input csv</a>
+  <ul class="collapse">
+  <li><a href="#verify-database-before-the-operation" id="toc-verify-database-before-the-operation" class="nav-link" data-scroll-target="#verify-database-before-the-operation"><span class="header-section-number">3.1.1</span> Verify database before the operation</a></li>
+  </ul></li>
+  <li><a href="#dbt-compile" id="toc-dbt-compile" class="nav-link" data-scroll-target="#dbt-compile"><span class="header-section-number">3.2</span> dbt compile</a>
+  <ul class="collapse">
+  <li><a href="#removed-targetcompiled" id="toc-removed-targetcompiled" class="nav-link" data-scroll-target="#removed-targetcompiled"><span class="header-section-number">3.2.0.1</span> removed target/compiled/</a></li>
+  </ul></li>
+  <li><a href="#build-your-models-dbt-run" id="toc-build-your-models-dbt-run" class="nav-link" data-scroll-target="#build-your-models-dbt-run"><span class="header-section-number">3.3</span> Build your models (dbt run)</a></li>
+  <li><a href="#delete-database-table-prior-dbt-run-that-will-create-the-table" id="toc-delete-database-table-prior-dbt-run-that-will-create-the-table" class="nav-link" data-scroll-target="#delete-database-table-prior-dbt-run-that-will-create-the-table"><span class="header-section-number">3.4</span> Delete database table prior dbt run that will create the table</a></li>
+  <li><a href="#test-model-using-dbt" id="toc-test-model-using-dbt" class="nav-link" data-scroll-target="#test-model-using-dbt"><span class="header-section-number">3.5</span> test model using dbt</a>
+  <ul class="collapse">
+  <li><a href="#test-name-and-its-test-vectors" id="toc-test-name-and-its-test-vectors" class="nav-link" data-scroll-target="#test-name-and-its-test-vectors"><span class="header-section-number">3.5.0.1</span> test name and its test vectors</a></li>
+  <li><a href="#run-test" id="toc-run-test" class="nav-link" data-scroll-target="#run-test"><span class="header-section-number">3.5.0.2</span> run test</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#apendix" id="toc-apendix" class="nav-link" data-scroll-target="#apendix"><span class="header-section-number">4</span> Apendix</a>
+  <ul>
+  <li><a href="#check-the-model-built" id="toc-check-the-model-built" class="nav-link" data-scroll-target="#check-the-model-built"><span class="header-section-number">4.1</span> check the model built</a>
+  <ul class="collapse">
+  <li><a href="#check-the-model-built-using-pyspark-in-progress" id="toc-check-the-model-built-using-pyspark-in-progress" class="nav-link" data-scroll-target="#check-the-model-built-using-pyspark-in-progress"><span class="header-section-number">4.1.1</span> Check the model built using Pyspark (In progress)</a></li>
+  <li><a href="#test-the-built-model-using-the-test-model" id="toc-test-the-built-model-using-the-test-model" class="nav-link" data-scroll-target="#test-the-built-model-using-the-test-model"><span class="header-section-number">4.1.2</span> Test the built model (using the test model)</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#todo" id="toc-todo" class="nav-link" data-scroll-target="#todo"><span class="header-section-number">5</span> Todo</a>
+  <ul>
+  <li><a href="#audit-compliance" id="toc-audit-compliance" class="nav-link" data-scroll-target="#audit-compliance"><span class="header-section-number">5.1</span> Audit compliance</a>
+  <ul class="collapse">
+  <li><a href="#time-tracing-with-time-stamping" id="toc-time-tracing-with-time-stamping" class="nav-link" data-scroll-target="#time-tracing-with-time-stamping"><span class="header-section-number">5.1.1</span> time tracing with time-stamping</a></li>
+  <li><a href="#file-tracing-with-source-and-targets-file-path-tablename" id="toc-file-tracing-with-source-and-targets-file-path-tablename" class="nav-link" data-scroll-target="#file-tracing-with-source-and-targets-file-path-tablename"><span class="header-section-number">5.1.2</span> File tracing with source and targets file path, tablename</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="https://github.com/VincentChong123/test1"><i class="bi bi-link-45deg"></i>github page</a></li></ul></div></nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Demo of testing ETL pipeline using DBT and spark</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="2b20813c" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pwd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>/usr/app/dbt</code></pre>
+</div>
+</div>
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>This is a demo of dbt work flow using an data ingestion as an example. In finance data ETL (Extract, Transform, Load) important to have sanitity check of input data, to avoid the ingesting invalid data….</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+  DBT["DBT-pyspark[Hive]"] --&gt; |SQL generated by 'dbt test'| T(Spark-Thrift)
+  T --&gt;|labelB| Storage[(Postgre Hive metadata store)]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<div id="ae9c7095" class="cell" data-execution_count="99">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pd.read_csv(<span class="st">"/usr/app/demo/dbt_spark_demo_prj/seeds/transactions/raw__transactions.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="99">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">amount</th>
+<th data-quarto-table-cell-role="th">currency</th>
+<th data-quarto-table-cell-role="th">status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>100</td>
+<td>USD</td>
+<td>ACTIVE</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2</td>
+<td>200</td>
+<td>SGD</td>
+<td>ACTIVE</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>3</td>
+<td>150</td>
+<td>EUR</td>
+<td>ACTIVE</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>4</td>
+<td>120</td>
+<td>USD</td>
+<td>INACTIVE</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>5</td>
+<td>180</td>
+<td>SGD</td>
+<td>INACTIVE</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>6</td>
+<td>300</td>
+<td>JPY</td>
+<td>ACTIVE</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="project-file-structure" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="project-file-structure"><span class="header-section-number">1.1</span> Project file structure</h2>
+<div id="b28d4077" class="cell" data-execution_count="100">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>cd ..<span class="op">/</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>tree <span class="op">-</span>L <span class="dv">2</span> <span class="op">-</span>I <span class="st">"*.md:*.toml"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-blue-fg ansi-bold">.</span>
+
+├── <span class="ansi-blue-fg ansi-bold">dbt</span>
+
+│&nbsp;&nbsp; ├── dbt.Dockerfile
+
+│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">dbt_spark_demo_prj</span>
+
+│&nbsp;&nbsp; ├── docker-compose.yml
+
+│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">logs</span>
+
+��&nbsp;&nbsp; └── requirements.txt
+
+├── <span class="ansi-blue-fg ansi-bold">dbt-spark</span>
+
+│&nbsp;&nbsp; ├── CHANGELOG.md
+
+│&nbsp;&nbsp; ├── CONTRIBUTING.md
+
+│&nbsp;&nbsp; ├── License.md
+
+│&nbsp;&nbsp; ├── README.md
+
+│&nbsp;&nbsp; ├���─ <span class="ansi-blue-fg ansi-bold">dagger</span>
+
+│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">dbt</span>
+
+│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">docker</span>
+
+���&nbsp;&nbsp; ├── docker-compose.yml
+
+│&nbsp;&nbsp; ├── hatch.toml
+
+│&nbsp;&nbsp; ├── pyproject.toml
+
+��&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">scripts</span>
+
+│&nbsp;&nbsp; ├── test.env.example
+
+│&nbsp;&nbsp; └── <span class="ansi-blue-fg ansi-bold">tests</span>
+
+├── <span class="ansi-blue-fg ansi-bold">demo</span>
+
+│&nbsp;&nbsp; ├── dbt-spark-demo.ipynb
+
+│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">dbt_spark_demo_prj</span>
+
+│&nbsp;&nbsp; └── profiles.yml
+
+└── docker-common.sh
+
+
+
+11 directories, 14 files
+</pre>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="environment-setup" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Environment setup</h1>
+<section id="docker" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="docker"><span class="header-section-number">2.1</span> Docker</h2>
+<section id="shared-network-for-docker-containers" class="level3" data-number="2.1.1">
+<h3 data-number="2.1.1" class="anchored" data-anchor-id="shared-network-for-docker-containers"><span class="header-section-number">2.1.1</span> Shared network for docker containers</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ./docker-common.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="install-jupyter-notebook-for-running-this-demo-in-notebook" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="install-jupyter-notebook-for-running-this-demo-in-notebook"><span class="header-section-number">2.2</span> Install jupyter notebook for running this demo in notebook</h2>
+<p>This notebook is executed using jupyer-notebook kernel of custom-dbt container (http://127.0.0.1:8888) using command</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook <span class="at">--NotebookApp.token</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.password</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.disable_check_xsrf</span><span class="op">=</span>True <span class="at">--allow-root</span> <span class="at">--ip</span><span class="op">=</span>0.0.0.0 <span class="at">--port</span><span class="op">=</span>8888 <span class="at">--no-browser</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>use allow-root for demo purpose only, not for production due to cyber security</p>
+<div id="8a58c3eb" class="cell" data-execution_count="67">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>date</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>which python</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>pwd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Sun Jun 29 08:51:23 UTC 2025
+/usr/local/bin/python
+/usr/app/dbt</code></pre>
+</div>
+</div>
+<section id="connection-to-read-table-in-hive-meta-data-store" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="connection-to-read-table-in-hive-meta-data-store"><span class="header-section-number">2.2.1</span> Connection to read table in Hive meta-data store</h3>
+</section>
+</section>
+<section id="variables" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="variables"><span class="header-section-number">2.3</span> Variables</h2>
+<div id="f86badf3" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pwd</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cd ..<span class="op">/</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pwd</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>spark_thrift_service_name<span class="op">=</span>os.getenv(<span class="st">'SPARK_CONTAINER_SERVICE_NAME'</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>dbt_project_dir<span class="op">=</span>os.getenv(<span class="st">'DBT_PROJECT_DIR'</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>dbt_project_name<span class="op">=</span>os.getenv(<span class="st">'DBT_PROJECT_NAME'</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(spark_thrift_service_name)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dbt_project_dir)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dbt_project_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>/usr/app/dbt
+/usr/app/dbt
+dbt-spark3-thrift
+/usr/app/dbt/dbt_spark_demo_prj
+dbt_spark_demo_prj</code></pre>
+</div>
+</div>
+</section>
+<section id="helper-codes" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="helper-codes"><span class="header-section-number">2.4</span> Helper codes</h2>
+<div id="b9f4df75" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyhive <span class="im">import</span> hive</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sqlalchemy.engine <span class="im">import</span> create_engine</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> check_table(host<span class="op">=</span>spark_thrift_service_name, message_to_be_printed<span class="op">=</span><span class="st">""</span>):</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with hive.Connection(host=spark_thrift_service_name, port=10000, </span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                     #    username='', </span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                     database='default') as conn:</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     # Query all tables in the default database</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     df = pd.read_sql("SHOW TABLES", conn)</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     # Display tables</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     display(df)</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(message_to_be_printed)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    engine <span class="op">=</span> create_engine(<span class="ss">f'hive://</span><span class="sc">{</span>spark_thrift_service_name<span class="sc">}</span><span class="ss">:10000/default'</span>)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.read_sql(<span class="st">"SHOW TABLES;"</span>, engine)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># display(df)</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    display(df)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> show_table_details(table_name, database_name<span class="op">=</span><span class="st">'default'</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># host=spark_thrift_service_name,</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>                        port<span class="op">=</span><span class="dv">10000</span>):</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># sqlAlchemy api fail here due to "sqlAlchemy relection": </span><span class="al">TODO</span><span class="co"> investigate root cause</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># engine = create_engine(f'hive://{spark_thrift_service_name}:10000/default')</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># df = pd.read_sql(f"select * from {table_name} limit 10", engine)</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> hive.Connection(host<span class="op">=</span>spark_thrift_service_name, port<span class="op">=</span>port, database<span class="op">=</span>database_name) <span class="im">as</span> conn:</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> pd.read_sql(<span class="ss">f"select * from </span><span class="sc">{</span>database_name<span class="sc">}</span><span class="ss">.</span><span class="sc">{</span>table_name<span class="sc">}</span><span class="ss">"</span>, conn)</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        display(df)</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>check_table()</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"------------"</span>)</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co"># show_table_details("transactions")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="dbt" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="dbt"><span class="header-section-number">2.5</span> DBT</h2>
+<div id="fdf3c236" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>Core:
+
+  - installed: 1.10.2
+
+  - latest:    1.10.2 - <span class="ansi-green-fg">Up to date!</span>
+
+
+
+Plugins:
+
+  - spark: 1.9.2 - <span class="ansi-green-fg">Up to date!</span>
+
+
+
+
+</pre>
+</div>
+</div>
+</div>
+</section>
+<section id="verify-dbt-setup" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="verify-dbt-setup"><span class="header-section-number">2.6</span> Verify DBT setup</h2>
+<section id="profiles.yml" class="level3" data-number="2.6.1">
+<h3 data-number="2.6.1" class="anchored" data-anchor-id="profiles.yml"><span class="header-section-number">2.6.1</span> profiles.yml</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">formal_verification_prj_name</span><span class="kw">:</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">outputs</span><span class="kw">:</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">spark</span><span class="kw">:</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">type</span><span class="kw">:</span><span class="at"> spark</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">method</span><span class="kw">:</span><span class="at"> thrift</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">host</span><span class="kw">:</span><span class="at"> dbt-spark3-thrift</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">schema</span><span class="kw">:</span><span class="at"> default</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">connect_timeout</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">authentication</span><span class="kw">:</span><span class="at"> NONE</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">target</span><span class="kw">:</span><span class="at"> spark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="70bfe66e" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">~/</span>.dbt<span class="op">/</span>profiles.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>cat: /root/.dbt/profiles.yml: No such file or directory</code></pre>
+</div>
+</div>
+</section>
+<section id="dbt_project.yml" class="level3" data-number="2.6.2">
+<h3 data-number="2.6.2" class="anchored" data-anchor-id="dbt_project.yml"><span class="header-section-number">2.6.2</span> dbt_project.yml</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'formal_verification_prj_name'</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">'1.0.0'</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This setting configures which "profile" dbt uses for this project.</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">profile</span><span class="kw">:</span><span class="at"> </span><span class="st">'formal_verification_prj_name'</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># These configurations specify where dbt should look for different types of files.</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># The `model-paths` config, for example, states that models in this project can be</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># found in the "models/" directory. You probably won't need to change these!</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">model-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"models"</span><span class="kw">]</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">analysis-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"analyses"</span><span class="kw">]</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">test-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"tests"</span><span class="kw">]</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">seed-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"seeds"</span><span class="kw">]</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="fu">macro-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"macros"</span><span class="kw">]</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="fu">snapshot-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"snapshots"</span><span class="kw">]</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="fu">clean-targets</span><span class="kw">:</span><span class="co">         # directories to be removed by `dbt clean`</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">"target"</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">"dbt_packages"</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="fu">models</span><span class="kw">:</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">formal_verification_prj_name</span><span class="kw">:</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="co">    # +write_json: false</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">+materialized</span><span class="kw">:</span><span class="at"> incremental</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">+file_format</span><span class="kw">:</span><span class="at"> parquet    </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="089c0b95" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj<span class="op">/</span>dbt_project.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'dbt_spark_demo_prj'
+version: '1.0.0'
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'dbt_spark_demo_prj'
+
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+# In this example config, we tell dbt to build all models in the example/
+# directory as views. These settings can be overridden in the individual model
+# files using the `{ config(...) }` macro.
+models:
+  dbt_spark_demo_prj:
+    +materialized: incremental
+    +file_format: parquet
+  # example:
+  #   +enabled: false
+    </code></pre>
+</div>
+</div>
+</section>
+<section id="dbt-debug" class="level3" data-number="2.6.3">
+<h3 data-number="2.6.3" class="anchored" data-anchor-id="dbt-debug"><span class="header-section-number">2.6.3</span> dbt debug</h3>
+<div id="463ce0e5" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt debug <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#to print detailed messages for debugging </span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">#!dbt debug --debug --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:04:41  Running with dbt=1.10.2
+
+10:04:41  dbt version: 1.10.2
+
+10:04:41  python version: 3.11.2
+
+10:04:41  python path: /usr/local/bin/python3
+
+10:04:41  os info: Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.31
+
+10:04:41  Using profiles dir at /root/.dbt
+
+10:04:41  Using profiles.yml file at /root/.dbt/profiles.yml
+
+10:04:41  Using dbt_project.yml file at /usr/app/dbt/dbt_spark_demo_prj/dbt_project.yml
+
+10:04:41  Configuration:
+
+10:04:41    profiles.yml file [<span class="ansi-red-fg">ERROR not found</span>]
+
+10:04:41    dbt_project.yml file [<span class="ansi-green-fg">OK found and valid</span>]
+
+10:04:41  Required dependencies:
+
+10:04:41   - git [<span class="ansi-green-fg">OK found</span>]
+
+
+
+10:04:41  Connection test skipped since no profile was found
+
+10:04:41  <span class="ansi-red-fg">1 check failed:</span>
+
+10:04:41  dbt looked for a profiles.yml file in /root/.dbt/profiles.yml, but did
+
+not find one. For more information on configuring your profile, consult the
+
+documentation:
+
+
+
+https://docs.getdbt.com/docs/configure-your-profile
+
+
+
+
+</pre>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="dbt-command-comparisons" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="dbt-command-comparisons"><span class="header-section-number">2.7</span> dbt command comparisons</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 23%">
+<col style="width: 42%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>Purpose</th>
+<th>What it does</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong><code>dbt compile</code></strong></td>
+<td>Prepares SQL code for execution</td>
+<td>Converts Jinja + macros into raw SQL; writes compiled files to <code>target/</code></td>
+<td>Compiled SQL files (no warehouse changes)</td>
+</tr>
+<tr class="even">
+<td><strong><code>dbt run</code></strong></td>
+<td>Builds models (tables/views)</td>
+<td>Executes compiled SQL to materialize models in the data warehouse</td>
+<td>Tables/views in the warehouse</td>
+</tr>
+<tr class="odd">
+<td><strong><code>dbt test</code></strong></td>
+<td>Validates data quality assumptions</td>
+<td>Runs data tests (e.g., <code>not_null</code>, <code>unique</code>, custom) on warehouse data</td>
+<td>Test pass/fail results</td>
+</tr>
+<tr class="even">
+<td><strong><code>dbt seed</code></strong></td>
+<td>Loads static CSV data into the warehouse</td>
+<td>Uploads CSV files from the <code>seeds/</code> directory into tables</td>
+<td>Tables containing seed data</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="prepare-sql" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Prepare SQL</h1>
+<section id="read-dbt-input-csv" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="read-dbt-input-csv"><span class="header-section-number">3.1</span> Read dbt input csv</h2>
+<ul>
+<li>read seeds/transactions.csv,</li>
+<li>dbt generate raw__transaction.csv</li>
+<li>dbt create table default.raw_transaction at the database</li>
+</ul>
+<section id="verify-database-before-the-operation" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="verify-database-before-the-operation"><span class="header-section-number">3.1.1</span> Verify database before the operation</h3>
+<div id="6c4e3091" class="cell" data-execution_count="27">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.raw__transactions"}'</span>  </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:14:13  Running with dbt=1.10.2
+
+10:14:13  Registered adapter: spark=1.9.2
+
+10:14:14  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+10:14:19  Running with dbt=1.10.2
+
+10:14:20  Registered adapter: spark=1.9.2
+
+10:14:20  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+</pre>
+</div>
+</div>
+</div>
+<div id="ff9ca4df" class="cell" data-execution_count="31">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"Database table before the operation"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt seed <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"</span><span class="ch">\n</span><span class="st">Database table after the operation"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Database table before the operation</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">namespace</th>
+<th data-quarto-table-cell-role="th">tableName</th>
+<th data-quarto-table-cell-role="th">isTemporary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>default</td>
+<td>raw__transactions</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:16:57  Running with dbt=1.10.2
+
+10:16:57  Registered adapter: spark=1.9.2
+
+10:16:58  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+10:16:58  
+
+10:16:58  Concurrency: 1 threads (target='spark')
+
+10:16:58  
+
+10:16:58  1 of 1 START seed file default.raw__transactions ............................... [RUN]
+
+10:16:59  1 of 1 OK loaded seed file default.raw__transactions ........................... [<span class="ansi-green-fg">INSERT 6</span> in 0.90s]
+
+10:16:59  
+
+10:16:59  Finished running 1 seed in 0 hours 0 minutes and 1.24 seconds (1.24s).
+
+10:16:59  
+
+10:16:59  <span class="ansi-green-fg">Completed successfully</span>
+
+10:16:59  
+
+10:16:59  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+
+
+
+Database table after the operation
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">namespace</th>
+<th data-quarto-table-cell-role="th">tableName</th>
+<th data-quarto-table-cell-role="th">isTemporary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>default</td>
+<td>raw__transactions</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="dbt-compile" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="dbt-compile"><span class="header-section-number">3.2</span> dbt compile</h2>
+<section id="removed-targetcompiled" class="level4" data-number="3.2.0.1">
+<h4 data-number="3.2.0.1" class="anchored" data-anchor-id="removed-targetcompiled"><span class="header-section-number">3.2.0.1</span> removed target/compiled/</h4>
+<div id="be2451a9" class="cell" data-execution_count="32">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>rf dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span>compiled<span class="op">/</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span><span class="bu">compile</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ls: cannot access 'dbt_spark_demo_prj/target/compile': No such file or directory</code></pre>
+</div>
+</div>
+<div id="e6d17db8" class="cell" data-execution_count="36">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls $dbt_project_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>dbt_project.yml  logs  macros  models  seeds  setup.sh  target  tests</code></pre>
+</div>
+</div>
+<div id="7789867d" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt <span class="bu">compile</span> <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:10:41  Running with dbt=1.10.2
+
+10:10:41  Registered adapter: spark=1.9.2
+
+10:10:42  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+10:10:42  
+
+10:10:42  Concurrency: 1 threads (target='spark')
+
+10:10:42  
+</pre>
+</div>
+</div>
+</div>
+<div id="2075b987" class="cell" data-execution_count="34">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span>compiled<span class="op">/</span>dbt_spark_demo_prj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ls: cannot access '/usr/app/dbt/dbt_spark_demo_prj/target/compiled/dbt_spark_demo_prj': No such file or directory</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="build-your-models-dbt-run" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="build-your-models-dbt-run"><span class="header-section-number">3.3</span> Build your models (dbt run)</h2>
+</section>
+<section id="delete-database-table-prior-dbt-run-that-will-create-the-table" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="delete-database-table-prior-dbt-run-that-will-create-the-table"><span class="header-section-number">3.4</span> Delete database table prior dbt run that will create the table</h2>
+<div id="49dad449" class="cell" data-execution_count="44">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"before"</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"</span><span class="ch">\n</span><span class="st">after"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>before</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">namespace</th>
+<th data-quarto-table-cell-role="th">tableName</th>
+<th data-quarto-table-cell-role="th">isTemporary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>default</td>
+<td>raw__transactions</td>
+<td>False</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>default</td>
+<td>transactions</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:23:25  Running with dbt=1.10.2
+
+10:23:26  Registered adapter: spark=1.9.2
+
+10:23:27  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+
+
+after
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">namespace</th>
+<th data-quarto-table-cell-role="th">tableName</th>
+<th data-quarto-table-cell-role="th">isTemporary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>default</td>
+<td>raw__transactions</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="bdf648b1" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>r $dbt_project_dir<span class="op">/</span>target<span class="op">/</span>run</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span> </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"before"</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">After"</span>)</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tree $dbt_project_dir<span class="op">/</span>target<span class="op">/</span>run</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"after"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:30:21  Running with dbt=1.10.2
+
+10:30:21  Registered adapter: spark=1.9.2
+
+10:30:22  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+before
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">namespace</th>
+<th data-quarto-table-cell-role="th">tableName</th>
+<th data-quarto-table-cell-role="th">isTemporary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>default</td>
+<td>raw__transactions</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>10:30:27  Running with dbt=1.10.2
+
+10:30:27  Registered adapter: spark=1.9.2
+
+10:30:28  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+10:30:28  
+
+10:30:28  Concurrency: 1 threads (target='spark')
+
+10:30:28  
+
+10:30:28  1 of 1 START sql table model default.transactions .............................. [RUN]
+
+10:30:29  1 of 1 OK created sql table model default.transactions ......................... [<span class="ansi-green-fg">OK</span> in 0.70s]
+
+10:30:29  
+
+10:30:29  Finished running 1 table model in 0 hours 0 minutes and 1.03 seconds (1.03s).
+
+10:30:29  
+
+10:30:29  <span class="ansi-green-fg">Completed successfully</span>
+
+10:30:29  
+
+10:30:29  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
+
+
+
+After
+
+<span class="ansi-blue-fg ansi-bold">/usr/app/dbt/dbt_spark_demo_prj/target/run</span>
+
+└── <span class="ansi-blue-fg ansi-bold">dbt_spark_demo_prj</span>
+
+    └── <span class="ansi-blue-fg ansi-bold">models</span>
+
+        └── <span class="ansi-blue-fg ansi-bold">transactions</span>
+
+            └── transactions.sql
+
+
+
+3 directories, 1 file
+
+after
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">namespace</th>
+<th data-quarto-table-cell-role="th">tableName</th>
+<th data-quarto-table-cell-role="th">isTemporary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>default</td>
+<td>raw__transactions</td>
+<td>False</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>default</td>
+<td>transactions</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="test-model-using-dbt" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="test-model-using-dbt"><span class="header-section-number">3.5</span> test model using dbt</h2>
+<section id="test-name-and-its-test-vectors" class="level4" data-number="3.5.0.1">
+<h4 data-number="3.5.0.1" class="anchored" data-anchor-id="test-name-and-its-test-vectors"><span class="header-section-number">3.5.0.1</span> test name and its test vectors</h4>
+<div id="06dfaae6" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat dbt_spark_demo_prj<span class="op">/</span>tests<span class="op">/</span>unit<span class="op">/</span>test_transactions.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># tests/unit/test_transactions.yml
+
+version: 2
+unit_tests:
+  - name: test_currency_usd
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 1, amount: 100, currency: 'USD', status: 'ACTIVE'}
+    expect:
+      rows:
+        - {id: 1, amount_usd: 100, currency: 'USD', branch_marker: "USD_BRANCH"}
+
+  - name: test_currency_sgd
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 2, amount: 100, currency: 'SGD', status: 'ACTIVE'}
+    expect:
+      rows:
+        - {id: 2, amount_usd: 74, branch_marker: "SGD_BRANCH"}
+
+  - name: test_inactive
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 2, amount: 100, currency: 'SGD', status: 'INACTIVE'}
+    expect: 
+      rows: []</code></pre>
+</div>
+</div>
+</section>
+<section id="run-test" class="level4" data-number="3.5.0.2">
+<h4 data-number="3.5.0.2" class="anchored" data-anchor-id="run-test"><span class="header-section-number">3.5.0.2</span> run test</h4>
+<div id="c0c0834d" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>export DBT_PROJECT_DIR<span class="op">=/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>dbt test <span class="op">--</span>log<span class="op">-</span>level info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>09:25:13  Running with dbt=1.10.2
+
+09:25:13  Registered adapter: spark=1.9.2
+
+09:25:14  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
+
+09:25:14  
+
+09:25:14  Concurrency: 1 threads (target='spark')
+
+09:25:14  
+
+09:25:14  1 of 4 START test test_currency_coverage ....................................... [RUN]
+
+09:25:15  1 of 4 PASS test_currency_coverage ............................................. [<span class="ansi-green-fg">PASS</span> in 0.91s]
+
+09:25:15  2 of 4 START unit_test transactions::test_currency_sgd ......................... [RUN]
+
+09:25:16  2 of 4 PASS transactions::test_currency_sgd .................................... [<span class="ansi-green-fg">PASS</span> in 0.86s]
+
+09:25:16  3 of 4 START unit_test transactions::test_currency_usd ......................... [RUN]
+
+09:25:16  3 of 4 PASS transactions::test_currency_usd .................................... [<span class="ansi-green-fg">PASS</span> in 0.47s]
+
+09:25:16  4 of 4 START unit_test transactions::test_inactive ............................. [RUN]
+
+09:25:17  4 of 4 PASS transactions::test_inactive ........................................ [<span class="ansi-green-fg">PASS</span> in 0.57s]
+
+09:25:17  
+
+09:25:17  Finished running 1 test, 3 unit tests in 0 hours 0 minutes and 3.11 seconds (3.11s).
+
+09:25:17  
+
+09:25:17  <span class="ansi-green-fg">Completed successfully</span>
+
+09:25:17  
+
+09:25:17  Done. PASS=4 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=4
+</pre>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="apendix" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Apendix</h1>
+<section id="check-the-model-built" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="check-the-model-built"><span class="header-section-number">4.1</span> check the model built</h2>
+<section id="check-the-model-built-using-pyspark-in-progress" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="check-the-model-built-using-pyspark-in-progress"><span class="header-section-number">4.1.1</span> Check the model built using Pyspark (In progress)</h3>
+<div id="32863689" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install pyspark<span class="op">==</span><span class="fl">3.3.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>Collecting pyspark==3.3.2
+
+  Downloading pyspark-3.3.2.tar.gz (281.4 MB)
+
+     <span class="ansi-bright-black-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">281.4/281.4 MB</span> <span class="ansi-red-fg">2.9 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>00:0100:02
+
+  Preparing metadata (setup.py) ... done
+
+Collecting py4j==0.10.9.5 (from pyspark==3.3.2)
+
+  Downloading py4j-0.10.9.5-py2.py3-none-any.whl.metadata (1.5 kB)
+
+Downloading py4j-0.10.9.5-py2.py3-none-any.whl (199 kB)
+
+Building wheels for collected packages: pyspark
+
+<span class="ansi-yellow-fg">  DEPRECATION: Building 'pyspark' using the legacy setup.py bdist_wheel mechanism, which will be removed in a future version. pip 25.3 will enforce this behaviour change. A possible replacement is to use the standardized build interface by setting the `--use-pep517` option, (possibly combined with `--no-build-isolation`), or adding a `pyproject.toml` file to the source tree of 'pyspark'. Discussion can be found at https://github.com/pypa/pip/issues/6334</span><span class="ansi-yellow-fg">
+
+</span>  Building wheel for pyspark (setup.py) ... done
+
+  Created wheel for pyspark: filename=pyspark-3.3.2-py2.py3-none-any.whl size=281824006 sha256=e6e29ec3c908873f4f9343738094fd1b4ae9ca2b7621d7802951421e92cabb32
+
+  Stored in directory: /root/.cache/pip/wheels/47/69/84/c7c7776e2287a654536f5cba7dc54c904c03aa2c3e29206f0f
+
+Successfully built pyspark
+
+Installing collected packages: py4j, pyspark
+
+   <span class="ansi-bright-black-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">2/2</span> [pyspark]m1/2 [pyspark]
+
+Successfully installed py4j-0.10.9.5 pyspark-3.3.2
+
+<span class="ansi-yellow-fg">WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.</span><span class="ansi-yellow-fg">
+
+</span></pre>
+</div>
+</div>
+</div>
+<div id="87f91e66" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># For Debian/Ubuntu-based containers:</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>apt<span class="op">-</span>get update <span class="op">&amp;&amp;</span> apt<span class="op">-</span>get install <span class="op">-</span>y openjdk<span class="op">-</span><span class="dv">11</span><span class="op">-</span>jdk</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co"># For Alpine-based containers:</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>apk add openjdk11</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="67c39001" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls <span class="op">/</span>usr<span class="op">/</span>lib<span class="op">/</span>jvm<span class="op">/</span>java<span class="op">-</span><span class="dv">11</span><span class="op">-</span>openjdk<span class="op">-</span>amd64</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>bin  conf  docs  include  jmods  legal  lib  man  release</code></pre>
+</div>
+</div>
+<div id="ff2863d3" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># !. /usr/spark/bin/load-spark-env.sh</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Typically in Debian/Ubuntu:</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export JAVA_HOME<span class="op">=</span>$(dirname $(dirname $(readlink <span class="op">-</span>f $(which java))))</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Or set it explicitly:</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export JAVA_HOME<span class="op">=/</span>usr<span class="op">/</span>lib<span class="op">/</span>jvm<span class="op">/</span>java<span class="op">-</span><span class="dv">11</span><span class="op">-</span>openjdk<span class="op">-</span>amd64</span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyspark.sql <span class="im">import</span> SparkSession</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>spark <span class="op">=</span> SparkSession.builder <span class="op">\</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>    .appName(<span class="st">"dbt_clean"</span>) <span class="op">\</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"spark.hadoop.hive.metastore.schema.verification"</span>, <span class="st">"true"</span>) <span class="op">\</span></span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"spark.sql.catalogImplementation"</span>, <span class="st">"hive"</span>) <span class="op">\</span></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>    .enableHiveSupport() <span class="op">\</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>    .getOrCreate()</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a><span class="co"># spark = SparkSession.builder \</span></span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("hive.metastore.uris", "thrift://dbt-hive-metastore:10000") \</span></span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("spark.sql.catalogImplementation", "hive") \</span></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a><span class="co">#     .enableHiveSupport() \</span></span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a><span class="co">#     .getOrCreate()</span></span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"USE default"</span>)  <span class="co"># Or your specific database</span></span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"SHOW DATABASES"</span>).show()</span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("select * from transactions").show()</span></span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="co"># # df.toPandas()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="b054f4f4" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"SHOW TABLES IN default"</span>).show(truncate<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>+---------+---------+-----------+
+|namespace|tableName|isTemporary|
++---------+---------+-----------+
++---------+---------+-----------+
+</code></pre>
+</div>
+</div>
+<div id="d2477376" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Query metastore system tables</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"""</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT TBL_NAME, TBL_TYPE </span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM default.TBLS </span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="st">  JOIN default.DBS ON TBLS.DB_ID = DBS.DB_ID </span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="st">  WHERE DBS.NAME = 'default'</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>).show(truncate<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="04c7f91a" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>spark.conf.get(<span class="st">"hive.metastore.uris"</span>)  <span class="co"># Should return your URI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="114">
+<pre><code>'thrift://dbt-hive-metastore:9083'</code></pre>
+</div>
+</div>
+<div id="30ef3800" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>spark.conf.get(<span class="st">"spark.sql.catalogImplementation"</span>)  <span class="co"># Should return "hive"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="131">
+<pre><code>'hive'</code></pre>
+</div>
+</div>
+<div id="91926ec3" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyspark.sql <span class="im">import</span> SparkSession</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>spark.stop()</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>spark <span class="op">=</span> SparkSession.builder <span class="op">\</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    .appName(<span class="st">"DBTIntegration"</span>) <span class="op">\</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"hive.metastore.uris"</span>, <span class="st">"thrift://dbt-hive-metastore:9083"</span>) <span class="op">\</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"spark.sql.catalogImplementation"</span>, <span class="st">"hive"</span>) <span class="op">\</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"javax.jdo.option.ConnectionUserName"</span>, <span class="st">"dbt"</span>) <span class="op">\</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"javax.jdo.option.ConnectionPassword"</span>, <span class="st">"dbt"</span>) <span class="op">\</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>    .enableHiveSupport() <span class="op">\</span></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>    .getOrCreate()</span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"SHOW TABLES IN default"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>25/06/25 12:34:07 WARN metastore: Failed to connect to the MetaStore Server...
+25/06/25 12:34:08 WARN metastore: Failed to connect to the MetaStore Server...
+25/06/25 12:34:09 WARN metastore: Failed to connect to the MetaStore Server...
+25/06/25 12:34:10 WARN HiveClientImpl: HiveClient got thrift exception, destroying client and retrying (0 tries remaining)
+org.apache.hadoop.hive.ql.metadata.HiveException: java.lang.RuntimeException: Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient
+    at org.apache.hadoop.hive.ql.metadata.Hive.getDatabase(Hive.java:1567)
+    at org.apache.hadoop.hive.ql.metadata.Hive.databaseExists(Hive.java:1552)
+    at org.apache.spark.sql.hive.client.Shim_v0_12.databaseExists(HiveShim.scala:609)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$databaseExists$1(HiveClientImpl.scala:398)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$withHiveState$1(HiveClientImpl.scala:298)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.liftedTree1$1(HiveClientImpl.scala:229)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.retryLocked(HiveClientImpl.scala:228)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.withHiveState(HiveClientImpl.scala:278)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.databaseExists(HiveClientImpl.scala:398)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.$anonfun$databaseExists$1(HiveExternalCatalog.scala:223)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.withClient(HiveExternalCatalog.scala:101)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.databaseExists(HiveExternalCatalog.scala:223)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog$lzycompute(SharedState.scala:150)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog(SharedState.scala:140)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager$lzycompute(SharedState.scala:170)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager(SharedState.scala:168)
+    at org.apache.spark.sql.hive.HiveSessionStateBuilder.$anonfun$catalog$2(HiveSessionStateBuilder.scala:70)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager$lzycompute(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1031)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1017)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1009)
+    at org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog.listTables(V2SessionCatalog.scala:57)
+    at org.apache.spark.sql.execution.datasources.v2.ShowTablesExec.run(ShowTablesExec.scala:40)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.$anonfun$applyOrElse$1(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$6(SQLExecution.scala:109)
+    at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:169)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$1(SQLExecution.scala:95)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:64)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:94)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(TreeNode.scala:176)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:267)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:263)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:560)
+    at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:94)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted$lzycompute(QueryExecution.scala:81)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:79)
+    at org.apache.spark.sql.Dataset.&lt;init&gt;(Dataset.scala:220)
+    at org.apache.spark.sql.Dataset$.$anonfun$ofRows$2(Dataset.scala:100)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:97)
+    at org.apache.spark.sql.SparkSession.$anonfun$sql$1(SparkSession.scala:622)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.SparkSession.sql(SparkSession.scala:617)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+    at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+    at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)
+    at py4j.Gateway.invoke(Gateway.java:282)
+    at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+    at py4j.commands.CallCommand.execute(CallCommand.java:79)
+    at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+    at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+    at java.base/java.lang.Thread.run(Thread.java:829)
+Caused by: java.lang.RuntimeException: Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient
+    at org.apache.hadoop.hive.metastore.MetaStoreUtils.newInstance(MetaStoreUtils.java:1742)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.&lt;init&gt;(RetryingMetaStoreClient.java:83)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:133)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:104)
+    at org.apache.hadoop.hive.ql.metadata.Hive.createMetaStoreClient(Hive.java:3607)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3659)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3639)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getDatabase(Hive.java:1563)
+    ... 67 more
+Caused by: java.lang.reflect.InvocationTargetException
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+    at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+    at org.apache.hadoop.hive.metastore.MetaStoreUtils.newInstance(MetaStoreUtils.java:1740)
+    ... 74 more
+Caused by: MetaException(message:Could not connect to meta store using any of the URIs provided. Most recent failure: org.apache.thrift.transport.TTransportException: java.net.ConnectException: Connection refused (Connection refused)
+    at org.apache.thrift.transport.TSocket.open(TSocket.java:226)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.open(HiveMetaStoreClient.java:478)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.&lt;init&gt;(HiveMetaStoreClient.java:245)
+    at org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient.&lt;init&gt;(SessionHiveMetaStoreClient.java:70)
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+    at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+    at org.apache.hadoop.hive.metastore.MetaStoreUtils.newInstance(MetaStoreUtils.java:1740)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.&lt;init&gt;(RetryingMetaStoreClient.java:83)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:133)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:104)
+    at org.apache.hadoop.hive.ql.metadata.Hive.createMetaStoreClient(Hive.java:3607)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3659)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3639)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getDatabase(Hive.java:1563)
+    at org.apache.hadoop.hive.ql.metadata.Hive.databaseExists(Hive.java:1552)
+    at org.apache.spark.sql.hive.client.Shim_v0_12.databaseExists(HiveShim.scala:609)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$databaseExists$1(HiveClientImpl.scala:398)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$withHiveState$1(HiveClientImpl.scala:298)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.liftedTree1$1(HiveClientImpl.scala:229)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.retryLocked(HiveClientImpl.scala:228)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.withHiveState(HiveClientImpl.scala:278)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.databaseExists(HiveClientImpl.scala:398)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.$anonfun$databaseExists$1(HiveExternalCatalog.scala:223)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.withClient(HiveExternalCatalog.scala:101)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.databaseExists(HiveExternalCatalog.scala:223)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog$lzycompute(SharedState.scala:150)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog(SharedState.scala:140)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager$lzycompute(SharedState.scala:170)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager(SharedState.scala:168)
+    at org.apache.spark.sql.hive.HiveSessionStateBuilder.$anonfun$catalog$2(HiveSessionStateBuilder.scala:70)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager$lzycompute(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1031)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1017)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1009)
+    at org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog.listTables(V2SessionCatalog.scala:57)
+    at org.apache.spark.sql.execution.datasources.v2.ShowTablesExec.run(ShowTablesExec.scala:40)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.$anonfun$applyOrElse$1(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$6(SQLExecution.scala:109)
+    at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:169)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$1(SQLExecution.scala:95)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:64)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:94)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(TreeNode.scala:176)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:267)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:263)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:560)
+    at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:94)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted$lzycompute(QueryExecution.scala:81)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:79)
+    at org.apache.spark.sql.Dataset.&lt;init&gt;(Dataset.scala:220)
+    at org.apache.spark.sql.Dataset$.$anonfun$ofRows$2(Dataset.scala:100)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:97)
+    at org.apache.spark.sql.SparkSession.$anonfun$sql$1(SparkSession.scala:622)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.SparkSession.sql(SparkSession.scala:617)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+    at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+    at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)
+    at py4j.Gateway.invoke(Gateway.java:282)
+    at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+    at py4j.commands.CallCommand.execute(CallCommand.java:79)
+    at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+    at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+    at java.base/java.lang.Thread.run(Thread.java:829)
+Caused by: java.net.ConnectException: Connection refused (Connection refused)
+    at java.base/java.net.PlainSocketImpl.socketConnect(Native Method)
+    at java.base/java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:412)
+    at java.base/java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:255)
+    at java.base/java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:237)
+    at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+    at java.base/java.net.Socket.connect(Socket.java:609)
+    at org.apache.thrift.transport.TSocket.open(TSocket.java:221)
+    ... 82 more
+)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.open(HiveMetaStoreClient.java:527)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.&lt;init&gt;(HiveMetaStoreClient.java:245)
+    at org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient.&lt;init&gt;(SessionHiveMetaStoreClient.java:70)
+    ... 79 more
+25/06/25 12:34:11 WARN HiveClientImpl: Deadline exceeded</code></pre>
+</div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AnalysisException</span>                         Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[143]</span><span class="ansi-green-fg">, line 12</span>
+<span class="ansi-green-fg">      3</span> spark.stop()
+<span class="ansi-green-fg">      4</span> spark = SparkSession.builder \
+<span class="ansi-green-fg">      5</span>     .appName(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">DBTIntegration</span><span class="ansi-yellow-fg">"</span>) \
+<span class="ansi-green-fg">      6</span>     .config(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">hive.metastore.uris</span><span class="ansi-yellow-fg">"</span>, <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">thrift://dbt-hive-metastore:9083</span><span class="ansi-yellow-fg">"</span>) \
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">     10</span>     .enableHiveSupport() \
+<span class="ansi-green-fg">     11</span>     .getOrCreate()
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">12</span> <span class="ansi-yellow-bg">spark</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">sql</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">SHOW TABLES IN default</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pyspark/sql/session.py:1034</span>, in <span class="ansi-cyan-fg">SparkSession.sql</span><span class="ansi-blue-fg">(self, sqlQuery, **kwargs)</span>
+<span class="ansi-green-fg">   1032</span>     sqlQuery = formatter.format(sqlQuery, **kwargs)
+<span class="ansi-green-fg">   1033</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1034</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> DataFrame(<span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_jsparkSession</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">sql</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sqlQuery</span><span class="ansi-yellow-bg">)</span>, <span style="color:rgb(0,135,0)">self</span>)
+<span class="ansi-green-fg">   1035</span> <span style="font-weight:bold;color:rgb(0,135,0)">finally</span>:
+<span class="ansi-green-fg">   1036</span>     <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">len</span>(kwargs) &gt; <span class="ansi-green-fg">0</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/py4j/java_gateway.py:1321</span>, in <span class="ansi-cyan-fg">JavaMember.__call__</span><span class="ansi-blue-fg">(self, *args)</span>
+<span class="ansi-green-fg">   1315</span> command = proto.CALL_COMMAND_NAME +\
+<span class="ansi-green-fg">   1316</span>     <span style="color:rgb(0,135,0)">self</span>.command_header +\
+<span class="ansi-green-fg">   1317</span>     args_command +\
+<span class="ansi-green-fg">   1318</span>     proto.END_COMMAND_PART
+<span class="ansi-green-fg">   1320</span> answer = <span style="color:rgb(0,135,0)">self</span>.gateway_client.send_command(command)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1321</span> return_value = <span class="ansi-yellow-bg">get_return_value</span><span class="ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">   1322</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">answer</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">gateway_client</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">target_id</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">name</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1324</span> <span style="font-weight:bold;color:rgb(0,135,0)">for</span> temp_arg <span style="font-weight:bold;color:rgb(175,0,255)">in</span> temp_args:
+<span class="ansi-green-fg">   1325</span>     temp_arg._detach()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pyspark/sql/utils.py:196</span>, in <span class="ansi-cyan-fg">capture_sql_exception.&lt;locals&gt;.deco</span><span class="ansi-blue-fg">(*a, **kw)</span>
+<span class="ansi-green-fg">    192</span> converted = convert_exception(e.java_exception)
+<span class="ansi-green-fg">    193</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="color:rgb(0,135,0)">isinstance</span>(converted, UnknownException):
+<span class="ansi-green-fg">    194</span>     <span style="font-style:italic;color:rgb(95,135,135)"># Hide where the exception came from that shows a non-Pythonic</span>
+<span class="ansi-green-fg">    195</span>     <span style="font-style:italic;color:rgb(95,135,135)"># JVM exception message.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">196</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> converted <span style="font-weight:bold;color:rgb(0,135,0)">from</span><span style="color:rgb(188,188,188)"> </span><span style="font-weight:bold;color:rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    197</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    198</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span>
+
+<span class="ansi-red-fg">AnalysisException</span>: org.apache.hadoop.hive.ql.metadata.HiveException: java.lang.RuntimeException: Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient</pre>
+</div>
+</div>
+</div>
+<div id="92f49695" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install pyspark<span class="op">==</span><span class="fl">3.3.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>25/06/25 12:32:32 WARN metastore: Failed to connect to the MetaStore Server...
+25/06/25 12:32:33 WARN metastore: Failed to connect to the MetaStore Server...
+25/06/25 12:32:34 WARN metastore: Failed to connect to the MetaStore Server...
+25/06/25 12:32:35 WARN HiveClientImpl: HiveClient got thrift exception, destroying client and retrying (0 tries remaining)
+org.apache.hadoop.hive.ql.metadata.HiveException: java.lang.RuntimeException: Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient
+    at org.apache.hadoop.hive.ql.metadata.Hive.getDatabase(Hive.java:1567)
+    at org.apache.hadoop.hive.ql.metadata.Hive.databaseExists(Hive.java:1552)
+    at org.apache.spark.sql.hive.client.Shim_v0_12.databaseExists(HiveShim.scala:609)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$databaseExists$1(HiveClientImpl.scala:398)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$withHiveState$1(HiveClientImpl.scala:298)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.liftedTree1$1(HiveClientImpl.scala:229)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.retryLocked(HiveClientImpl.scala:228)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.withHiveState(HiveClientImpl.scala:278)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.databaseExists(HiveClientImpl.scala:398)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.$anonfun$databaseExists$1(HiveExternalCatalog.scala:223)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.withClient(HiveExternalCatalog.scala:101)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.databaseExists(HiveExternalCatalog.scala:223)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog$lzycompute(SharedState.scala:150)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog(SharedState.scala:140)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager$lzycompute(SharedState.scala:170)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager(SharedState.scala:168)
+    at org.apache.spark.sql.hive.HiveSessionStateBuilder.$anonfun$catalog$2(HiveSessionStateBuilder.scala:70)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager$lzycompute(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1031)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1017)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1009)
+    at org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog.listTables(V2SessionCatalog.scala:57)
+    at org.apache.spark.sql.execution.datasources.v2.ShowTablesExec.run(ShowTablesExec.scala:40)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.$anonfun$applyOrElse$1(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$6(SQLExecution.scala:109)
+    at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:169)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$1(SQLExecution.scala:95)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:64)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:94)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(TreeNode.scala:176)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:267)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:263)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:560)
+    at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:94)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted$lzycompute(QueryExecution.scala:81)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:79)
+    at org.apache.spark.sql.Dataset.&lt;init&gt;(Dataset.scala:220)
+    at org.apache.spark.sql.Dataset$.$anonfun$ofRows$2(Dataset.scala:100)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:97)
+    at org.apache.spark.sql.SparkSession.$anonfun$sql$1(SparkSession.scala:622)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.SparkSession.sql(SparkSession.scala:617)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+    at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+    at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)
+    at py4j.Gateway.invoke(Gateway.java:282)
+    at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+    at py4j.commands.CallCommand.execute(CallCommand.java:79)
+    at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+    at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+    at java.base/java.lang.Thread.run(Thread.java:829)
+Caused by: java.lang.RuntimeException: Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient
+    at org.apache.hadoop.hive.metastore.MetaStoreUtils.newInstance(MetaStoreUtils.java:1742)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.&lt;init&gt;(RetryingMetaStoreClient.java:83)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:133)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:104)
+    at org.apache.hadoop.hive.ql.metadata.Hive.createMetaStoreClient(Hive.java:3607)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3659)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3639)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getDatabase(Hive.java:1563)
+    ... 67 more
+Caused by: java.lang.reflect.InvocationTargetException
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+    at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+    at org.apache.hadoop.hive.metastore.MetaStoreUtils.newInstance(MetaStoreUtils.java:1740)
+    ... 74 more
+Caused by: MetaException(message:Could not connect to meta store using any of the URIs provided. Most recent failure: org.apache.thrift.transport.TTransportException: java.net.ConnectException: Connection refused (Connection refused)
+    at org.apache.thrift.transport.TSocket.open(TSocket.java:226)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.open(HiveMetaStoreClient.java:478)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.&lt;init&gt;(HiveMetaStoreClient.java:245)
+    at org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient.&lt;init&gt;(SessionHiveMetaStoreClient.java:70)
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+    at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+    at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:490)
+    at org.apache.hadoop.hive.metastore.MetaStoreUtils.newInstance(MetaStoreUtils.java:1740)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.&lt;init&gt;(RetryingMetaStoreClient.java:83)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:133)
+    at org.apache.hadoop.hive.metastore.RetryingMetaStoreClient.getProxy(RetryingMetaStoreClient.java:104)
+    at org.apache.hadoop.hive.ql.metadata.Hive.createMetaStoreClient(Hive.java:3607)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3659)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getMSC(Hive.java:3639)
+    at org.apache.hadoop.hive.ql.metadata.Hive.getDatabase(Hive.java:1563)
+    at org.apache.hadoop.hive.ql.metadata.Hive.databaseExists(Hive.java:1552)
+    at org.apache.spark.sql.hive.client.Shim_v0_12.databaseExists(HiveShim.scala:609)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$databaseExists$1(HiveClientImpl.scala:398)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.$anonfun$withHiveState$1(HiveClientImpl.scala:298)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.liftedTree1$1(HiveClientImpl.scala:229)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.retryLocked(HiveClientImpl.scala:228)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.withHiveState(HiveClientImpl.scala:278)
+    at org.apache.spark.sql.hive.client.HiveClientImpl.databaseExists(HiveClientImpl.scala:398)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.$anonfun$databaseExists$1(HiveExternalCatalog.scala:223)
+    at scala.runtime.java8.JFunction0$mcZ$sp.apply(JFunction0$mcZ$sp.java:23)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.withClient(HiveExternalCatalog.scala:101)
+    at org.apache.spark.sql.hive.HiveExternalCatalog.databaseExists(HiveExternalCatalog.scala:223)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog$lzycompute(SharedState.scala:150)
+    at org.apache.spark.sql.internal.SharedState.externalCatalog(SharedState.scala:140)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager$lzycompute(SharedState.scala:170)
+    at org.apache.spark.sql.internal.SharedState.globalTempViewManager(SharedState.scala:168)
+    at org.apache.spark.sql.hive.HiveSessionStateBuilder.$anonfun$catalog$2(HiveSessionStateBuilder.scala:70)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager$lzycompute(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.globalTempViewManager(SessionCatalog.scala:122)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1031)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1017)
+    at org.apache.spark.sql.catalyst.catalog.SessionCatalog.listTables(SessionCatalog.scala:1009)
+    at org.apache.spark.sql.execution.datasources.v2.V2SessionCatalog.listTables(V2SessionCatalog.scala:57)
+    at org.apache.spark.sql.execution.datasources.v2.ShowTablesExec.run(ShowTablesExec.scala:40)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result$lzycompute(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.result(V2CommandExec.scala:43)
+    at org.apache.spark.sql.execution.datasources.v2.V2CommandExec.executeCollect(V2CommandExec.scala:49)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.$anonfun$applyOrElse$1(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$6(SQLExecution.scala:109)
+    at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:169)
+    at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId$1(SQLExecution.scala:95)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:64)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:98)
+    at org.apache.spark.sql.execution.QueryExecution$$anonfun$eagerlyExecuteCommands$1.applyOrElse(QueryExecution.scala:94)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$transformDownWithPruning$1(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(TreeNode.scala:176)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDownWithPruning(TreeNode.scala:584)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.org$apache$spark$sql$catalyst$plans$logical$AnalysisHelper$$super$transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning(AnalysisHelper.scala:267)
+    at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.transformDownWithPruning$(AnalysisHelper.scala:263)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.transformDownWithPruning(LogicalPlan.scala:30)
+    at org.apache.spark.sql.catalyst.trees.TreeNode.transformDown(TreeNode.scala:560)
+    at org.apache.spark.sql.execution.QueryExecution.eagerlyExecuteCommands(QueryExecution.scala:94)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted$lzycompute(QueryExecution.scala:81)
+    at org.apache.spark.sql.execution.QueryExecution.commandExecuted(QueryExecution.scala:79)
+    at org.apache.spark.sql.Dataset.&lt;init&gt;(Dataset.scala:220)
+    at org.apache.spark.sql.Dataset$.$anonfun$ofRows$2(Dataset.scala:100)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:97)
+    at org.apache.spark.sql.SparkSession.$anonfun$sql$1(SparkSession.scala:622)
+    at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:779)
+    at org.apache.spark.sql.SparkSession.sql(SparkSession.scala:617)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+    at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+    at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)
+    at py4j.Gateway.invoke(Gateway.java:282)
+    at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+    at py4j.commands.CallCommand.execute(CallCommand.java:79)
+    at py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+    at py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+    at java.base/java.lang.Thread.run(Thread.java:829)
+Caused by: java.net.ConnectException: Connection refused (Connection refused)
+    at java.base/java.net.PlainSocketImpl.socketConnect(Native Method)
+    at java.base/java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:412)
+    at java.base/java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:255)
+    at java.base/java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:237)
+    at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
+    at java.base/java.net.Socket.connect(Socket.java:609)
+    at org.apache.thrift.transport.TSocket.open(TSocket.java:221)
+    ... 82 more
+)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.open(HiveMetaStoreClient.java:527)
+    at org.apache.hadoop.hive.metastore.HiveMetaStoreClient.&lt;init&gt;(HiveMetaStoreClient.java:245)
+    at org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient.&lt;init&gt;(SessionHiveMetaStoreClient.java:70)
+    ... 79 more
+25/06/25 12:32:36 WARN HiveClientImpl: Deadline exceeded</code></pre>
+</div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AnalysisException</span>                         Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[141]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> <span class="ansi-yellow-bg">spark</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">sql</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">SHOW TABLES IN default</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pyspark/sql/session.py:1034</span>, in <span class="ansi-cyan-fg">SparkSession.sql</span><span class="ansi-blue-fg">(self, sqlQuery, **kwargs)</span>
+<span class="ansi-green-fg">   1032</span>     sqlQuery = formatter.format(sqlQuery, **kwargs)
+<span class="ansi-green-fg">   1033</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1034</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> DataFrame(<span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_jsparkSession</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">sql</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">sqlQuery</span><span class="ansi-yellow-bg">)</span>, <span style="color:rgb(0,135,0)">self</span>)
+<span class="ansi-green-fg">   1035</span> <span style="font-weight:bold;color:rgb(0,135,0)">finally</span>:
+<span class="ansi-green-fg">   1036</span>     <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">len</span>(kwargs) &gt; <span class="ansi-green-fg">0</span>:
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/py4j/java_gateway.py:1321</span>, in <span class="ansi-cyan-fg">JavaMember.__call__</span><span class="ansi-blue-fg">(self, *args)</span>
+<span class="ansi-green-fg">   1315</span> command = proto.CALL_COMMAND_NAME +\
+<span class="ansi-green-fg">   1316</span>     <span style="color:rgb(0,135,0)">self</span>.command_header +\
+<span class="ansi-green-fg">   1317</span>     args_command +\
+<span class="ansi-green-fg">   1318</span>     proto.END_COMMAND_PART
+<span class="ansi-green-fg">   1320</span> answer = <span style="color:rgb(0,135,0)">self</span>.gateway_client.send_command(command)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1321</span> return_value = <span class="ansi-yellow-bg">get_return_value</span><span class="ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">   1322</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">answer</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">gateway_client</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">target_id</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">name</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1324</span> <span style="font-weight:bold;color:rgb(0,135,0)">for</span> temp_arg <span style="font-weight:bold;color:rgb(175,0,255)">in</span> temp_args:
+<span class="ansi-green-fg">   1325</span>     temp_arg._detach()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pyspark/sql/utils.py:196</span>, in <span class="ansi-cyan-fg">capture_sql_exception.&lt;locals&gt;.deco</span><span class="ansi-blue-fg">(*a, **kw)</span>
+<span class="ansi-green-fg">    192</span> converted = convert_exception(e.java_exception)
+<span class="ansi-green-fg">    193</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="color:rgb(0,135,0)">isinstance</span>(converted, UnknownException):
+<span class="ansi-green-fg">    194</span>     <span style="font-style:italic;color:rgb(95,135,135)"># Hide where the exception came from that shows a non-Pythonic</span>
+<span class="ansi-green-fg">    195</span>     <span style="font-style:italic;color:rgb(95,135,135)"># JVM exception message.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">196</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> converted <span style="font-weight:bold;color:rgb(0,135,0)">from</span><span style="color:rgb(188,188,188)"> </span><span style="font-weight:bold;color:rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    197</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    198</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span>
+
+<span class="ansi-red-fg">AnalysisException</span>: org.apache.hadoop.hive.ql.metadata.HiveException: java.lang.RuntimeException: Unable to instantiate org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient</pre>
+</div>
+</div>
+</div>
+<div id="a34760ee" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from pyhive import hive</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co"># conn = hive.connect(host=spark_thrift_service_name, port=10000)</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cursor = conn.cursor()</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># cursor.execute("SELECT * FROM default.transactions LIMIT 1")</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="co"># print(cursor.fetchall())</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[(1, 100, 'USD', Decimal('100.00'), 'USD_BRANCH')]</code></pre>
+</div>
+</div>
+</section>
+<section id="test-the-built-model-using-the-test-model" class="level3" data-number="4.1.2">
+<h3 data-number="4.1.2" class="anchored" data-anchor-id="test-the-built-model-using-the-test-model"><span class="header-section-number">4.1.2</span> Test the built model (using the test model)</h3>
+<div id="0d6db6bf" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">### dbt test</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="d95bbbdd" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt test <span class="op">--</span>log<span class="op">-</span>level info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>11:02:05  Running with dbt=1.11.0-a1
+
+11:02:06  Registered adapter: spark=1.9.2
+
+11:02:08  Found 1 model, 1 test, 1 seed, 585 macros, 3 unit tests
+
+11:02:08  
+
+11:02:08  Concurrency: 1 threads (target='spark')
+
+11:02:08  
+
+11:02:08  1 of 4 START test test_currency_coverage ....................................... [RUN]
+
+11:02:09  1 of 4 PASS test_currency_coverage ............................................. [<span class="ansi-green-fg">PASS</span> in 1.10s]
+
+11:02:09  2 of 4 START unit_test transactions::test_currency_sgd ......................... [RUN]
+
+11:02:11  2 of 4 PASS transactions::test_currency_sgd .................................... [<span class="ansi-green-fg">PASS</span> in 1.06s]
+
+11:02:11  3 of 4 START unit_test transactions::test_currency_usd ......................... [RUN]
+
+11:02:12  3 of 4 PASS transactions::test_currency_usd .................................... [<span class="ansi-green-fg">PASS</span> in 0.99s]
+
+11:02:12  4 of 4 START unit_test transactions::test_inactive ............................. [RUN]
+
+11:02:12  4 of 4 PASS transactions::test_inactive ........................................ [<span class="ansi-green-fg">PASS</span> in 0.78s]
+
+11:02:12  
+
+11:02:12  Finished running 1 test, 3 unit tests in 0 hours 0 minutes and 4.54 seconds (4.54s).
+
+11:02:13  
+
+11:02:13  <span class="ansi-green-fg">Completed successfully</span>
+
+11:02:13  
+
+11:02:13  Done. PASS=4 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=4
+</pre>
+</div>
+</div>
+</div>
+<div id="7cff9e94" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">/</span>home<span class="op">/</span>vin<span class="op">/</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span>prj<span class="op">/</span>stripe<span class="op">/</span>sql<span class="op">-</span>formal<span class="op">-</span>verification<span class="op">/</span>formal_verification_prj_name<span class="op">/</span>tests<span class="op">/</span>unit<span class="op">/</span>test_transactions.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># tests/unit/test_transactions.yml
+
+version: 2
+unit_tests:
+  - name: test_currency_usd
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 1, amount: 100, currency: 'USD', status: 'ACTIVE'}
+    expect:
+      rows:
+        - {id: 1, amount_usd: 100, currency: 'USD', branch_marker: "USD_BRANCH"}
+
+  - name: test_currency_sgd
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 2, amount: 100, currency: 'SGD', status: 'ACTIVE'}
+    expect:
+      rows:
+        - {id: 2, amount_usd: 74, branch_marker: "SGD_BRANCH"}
+
+  - name: test_inactive
+    model: transactions
+    given:
+      - input: ref('raw__transactions')
+        rows:
+          - {id: 2, amount: 100, currency: 'SGD', status: 'INACTIVE'}
+    expect: 
+      rows: []</code></pre>
+</div>
+</div>
+<div id="60c204c0" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %%bash</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="co"># cd /usr/app/dbt</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt compile --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # dbt run-operation drop_table --args '{"table_name": "default.transactions"}'</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt run-operation drop_view --args '{"view_name": "default.my_first_dbt_model"}' --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt run-operation drop_view --args '{"view_name": "default.my_second_dbt_model"}' --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+</section>
+<section id="todo" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Todo</h1>
+<section id="audit-compliance" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="audit-compliance"><span class="header-section-number">5.1</span> Audit compliance</h2>
+<section id="time-tracing-with-time-stamping" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="time-tracing-with-time-stamping"><span class="header-section-number">5.1.1</span> time tracing with time-stamping</h3>
+<ol type="1">
+<li>Add timestamp for loaded data using dbt model</li>
+</ol>
+<pre class="jinja"><code>SELECT
+    *,
+    '{{ run_started_at }}'::timestamp AS added_at
+FROM {{ ref('my_seed_table') }}</code></pre>
+</section>
+<section id="file-tracing-with-source-and-targets-file-path-tablename" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="file-tracing-with-source-and-targets-file-path-tablename"><span class="header-section-number">5.1.2</span> File tracing with source and targets file path, tablename</h3>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

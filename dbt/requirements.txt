@@ -1,0 +1,5 @@
+sqlalchemy
+pandas
+dotenv
+notebook
+dbt-spark[PyHive]
