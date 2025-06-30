@@ -1,0 +1,32 @@
+name: Run Demo on Push
+
+on:
+  push:
+    branches:
+      - '**'   # Match all branches
+
+jobs:
+  run-demo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Make script executable
+        run: chmod +x dbt-spark-demo/run-demo.sh
+
+      - name: Run the demo script
+        run: ./dbt-spark-demo/run-demo.sh
+
+      - name: Check script exists
+        run: test -f dbt-spark-demo/run-demo.sh
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            dbt-spark-demo/results/test_start.txt
+            dbt-spark-demo/results/test_end.txt
+            dbt-spark-demo/demo/dbt-spark-demo.ipynb

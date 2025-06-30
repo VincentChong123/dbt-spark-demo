@@ -2,4 +2,4 @@
 demo/dbt-spark-demo_files/
 demo/.user.yml
 demo/.ipynb_checkpoints/
-dbt/dbt_spark_demo_prj/logs/
+dbt/dbt_spark_demo_prj/logs
