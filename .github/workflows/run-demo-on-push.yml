@@ -23,7 +23,7 @@ jobs:
       #   run: test -f ./run-demo.sh
 
       - name: Upload results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: |
@@ -49,7 +49,7 @@ jobs:
           cp ./demo/dbt-spark-demo.html ./index.html
           
       - name: Upload results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: |
