@@ -8,7 +8,6 @@
 # Ensure this path is correct relative to where you run the script
 echo ----------------------START setup.sh
 . ../../.env
-echo ----------------------.env
 
 # Check if DBT_PROJECT_DIR is set after sourcing
 if [ -z "$DBT_PROJECT_DIR" ]; then

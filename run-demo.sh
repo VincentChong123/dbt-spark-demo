@@ -1,13 +1,14 @@
 docker network create my_shared_network
 pwd
 COMPOSE_UP=true
-cd dbt;             docker compose build; docker compose up -d
-cd ../dbt-spark;    docker compose build; docker compose up -d
-
-docker exec dbt-dbt-1 bash -c "cd /usr/app/demo/dbt_spark_demo_prj && . ./setup.sh"
+cd dbt;             docker compose build --no-cache; docker compose up -d
+cd ../dbt-spark;    docker compose build --no-cache; docker compose up -d
 
 rm -r dbt/dbt_spark_demo_prj/*
 rm demo/results/*.txt
+
+docker ps 
+docker exec dbt-dbt-1 bash -c "cd /usr/app/demo/dbt_spark_demo_prj && . ./setup.sh"
 
 # to show progress of notebook "run all" cell execution status in terminal, 
 # without opening notebook session in web browswer
