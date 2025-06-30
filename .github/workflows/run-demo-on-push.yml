@@ -16,52 +16,52 @@ jobs:
         with:
             token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Check script exists
-      #   run: test -f ./run-demo.sh
+      - name: Check script exists
+        run: test -f ./run-demo.sh
 
-      # - name: Make script executable
-      #   run: chmod +x run-demo.sh
+      - name: Make script executable
+        run: chmod +x run-demo.sh
 
-      # - name: Run the demo script
-      #   run: ./run-demo.sh
+      - name: Run the demo script
+        run: ./run-demo.sh
 
-      # - name: Upload results
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: test-results
-      #     path: |
-      #       ./demo/results/test_start.txt
-      #       ./demo/results/test_end.txt
-      #       ./demo/demo/dbt-spark-demo.ipynb
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ./demo/results/test_start.txt
+            ./demo/results/test_end.txt
+            ./demo/demo/dbt-spark-demo.ipynb
 
-      # - name: Install Python dependencies
-      #   run: |
-      #     python -m pip install  --upgrade pip
-      #     python -m pip install  --no-cache-dir "uv>=0.1.30,<0.2"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install  --upgrade pip
+          python -m pip install  --no-cache-dir "uv>=0.1.30,<0.2"
 
-      # - name: Install jupyter notebook
-      #   run: |
-      #     uv venv my_env
-      #     . ./my_env/bin/activate          
-      #     uv pip install notebook
+      - name: Install jupyter notebook
+        run: |
+          uv venv my_env
+          . ./my_env/bin/activate          
+          uv pip install notebook
 
-      # - name: Install Quarto
-      #   run: |
-      #     curl -LO https://quarto.org/download/latest/quarto-linux-amd64.deb
-      #     sudo dpkg -i quarto-linux-amd64.deb
-      #     quarto --version
+      - name: Install Quarto
+        run: |
+          curl -LO https://quarto.org/download/latest/quarto-linux-amd64.deb
+          sudo dpkg -i quarto-linux-amd64.deb
+          quarto --version
 
-      # - name: Render notebook and copy rendered output to docs
-      #   run: |
-      #     quarto render ./demo/dbt-spark-demo.ipynb
-      #     cp ./demo/dbt-spark-demo.html ./docs/index.htmlgit s
+      - name: Render notebook and copy rendered output to docs
+        run: |
+          quarto render ./demo/dbt-spark-demo.ipynb
+          cp ./demo/dbt-spark-demo.html ./docs/index.htmlgit s
           
-      # - name: Upload results
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: test-results
-      #     path: |
-      #       ./index.html
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ./index.html
 
       # - name: Deploy to GitHub Pages
       #   uses: peaceiris/actions-gh-pages@v3
