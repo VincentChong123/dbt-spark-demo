@@ -177,7 +177,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="introduction" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
 <p>This is a demo of dbt work flow using an data ingestion as an example. In finance data ETL (Extract, Transform, Load) important to have sanitity check of input data, to avoid the ingesting invalid data….</p>
-<div id="e897f7e7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.012275,&quot;end_time&quot;:&quot;2025-06-30T21:47:52.915691&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:47:52.903416&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[&quot;skip&quot;]" data-execution_count="1">
+<div id="e897f7e7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.012273,&quot;end_time&quot;:&quot;2025-06-30T21:56:28.073112&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:56:28.060839&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[&quot;skip&quot;]" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ```{mermaid}</span></span>
@@ -190,7 +190,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="ae9c7095" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.075463,&quot;end_time&quot;:&quot;2025-06-30T21:47:53.998454&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:47:52.922991&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="2">
+<div id="ae9c7095" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.105081,&quot;end_time&quot;:&quot;2025-06-30T21:56:29.185548&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:56:28.080467&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
@@ -261,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="project-file-structure" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="project-file-structure"><span class="header-section-number">1.1</span> Project file structure</h2>
-<div id="b28d4077" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.418905,&quot;end_time&quot;:&quot;2025-06-30T21:47:54.439852&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:47:54.020947&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="3">
+<div id="b28d4077" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.423795,&quot;end_time&quot;:&quot;2025-06-30T21:56:29.632239&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:56:29.208444&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tree <span class="op">-</span>L <span class="dv">2</span> <span class="op">--</span>sort<span class="op">=</span><span class="st">"name"</span> <span class="op">/</span>usr<span class="op">/</span>app <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*</span><span class="er">\</span><span class="st">.toml$"</span> <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*</span><span class="er">\</span><span class="st">.md$"</span> <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*files$"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -327,7 +327,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This notebook is executed using jupyer-notebook kernel (http://127.0.0.1:8888) of the loaded custom-dbt container. The container is loaded using command below</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook <span class="at">--NotebookApp.token</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.password</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.disable_check_xsrf</span><span class="op">=</span>True <span class="at">--allow-root</span> <span class="at">--ip</span><span class="op">=</span>0.0.0.0 <span class="at">--port</span><span class="op">=</span>8888 <span class="at">--no-browser</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>use allow-root for demo purpose only, not for production due to cyber security</p>
-<div id="8a58c3eb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.01936,&quot;end_time&quot;:&quot;2025-06-30T21:47:54.511275&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:47:54.491915&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="4">
+<div id="8a58c3eb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.019665,&quot;end_time&quot;:&quot;2025-06-30T21:56:29.704314&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:56:29.684649&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
@@ -337,7 +337,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>pwd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Tue Jul  1 05:47:54 +08 2025
+<pre><code>Tue Jul  1 05:56:29 +08 2025
 /usr/local/bin/python
 /usr/app/dbt</code></pre>
 </div>
@@ -348,7 +348,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="variables" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="variables"><span class="header-section-number">2.3</span> Variables</h2>
-<div id="f86badf3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.184717,&quot;end_time&quot;:&quot;2025-06-30T21:47:55.733744&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:47:54.549027&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="5">
+<div id="f86badf3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.179343,&quot;end_time&quot;:&quot;2025-06-30T21:56:30.922010&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:56:29.742667&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
@@ -378,7 +378,7 @@ dbt_spark_demo_prj</code></pre>
 </section>
 <section id="start-demo" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Start demo</h1>
-<div id="34c662e5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.78766,&quot;end_time&quot;:&quot;2025-06-30T21:47:56.544704&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:47:55.757044&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="6">
+<div id="34c662e5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.78285,&quot;end_time&quot;:&quot;2025-06-30T21:56:31.728669&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T21:56:30.945819&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>filepath<span class="op">=</span><span class="st">"/usr/app/demo/results/test_start.txt"</span></span>
@@ -389,7 +389,7 @@ dbt_spark_demo_prj</code></pre>
 <section id="helper-codes" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="helper-codes"><span class="header-section-number">3.1</span> Helper codes</h2>
 <p><span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span></p>
-<div id="b9f4df75" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.526823,&quot;end_time&quot;:&quot;2025-06-30T21:47:58.095159&quot;,&quot;exception&quot;:true,&quot;start_time&quot;:&quot;2025-06-30T21:47:56.568336&quot;,&quot;status&quot;:&quot;failed&quot;}}" data-tags="[]" data-execution_count="7">
+<div id="b9f4df75" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.539362,&quot;end_time&quot;:&quot;2025-06-30T21:56:33.291600&quot;,&quot;exception&quot;:true,&quot;start_time&quot;:&quot;2025-06-30T21:56:31.752238&quot;,&quot;status&quot;:&quot;failed&quot;}}" data-tags="[]" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyhive <span class="im">import</span> hive</span>
