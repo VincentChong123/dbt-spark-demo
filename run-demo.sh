@@ -6,6 +6,7 @@ cd ../dbt-spark;    docker compose up -d
 docker exec dbt-dbt-1 bash -c "cd /usr/app/demo/dbt_spark_demo_prj && . ./setup.sh"
 
 rm -r dbt/dbt_spark_demo_prj/*
+rm demo/results/*.txt
 
 # to show progress of notebook "run all" cell execution status in terminal, 
 # without opening notebook session in web browswer
