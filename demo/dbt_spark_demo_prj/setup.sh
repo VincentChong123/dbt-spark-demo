@@ -6,7 +6,9 @@
 
 # Source the .env file to load environment variables
 # Ensure this path is correct relative to where you run the script
+echo ----------------------START setup.sh
 . ../../.env
+echo ----------------------.env
 
 # Check if DBT_PROJECT_DIR is set after sourcing
 if [ -z "$DBT_PROJECT_DIR" ]; then
@@ -25,3 +27,4 @@ rm -r $DBT_PROJECT_NAME/{macros,models,tests,seeds}
 popd
 cp -r --verbose ./{macros,models,tests,seeds,dbt_project.yml} $DBT_TOP_DIR/$DBT_PROJECT_NAME
 chmod a+rw -R $DBT_TOP_DIR/$DBT_PROJECT_NAME
+echo ----------------------END setup.sh
