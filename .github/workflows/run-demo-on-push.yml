@@ -14,19 +14,19 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Make script executable
-        run: chmod +x dbt-spark-demo/run-demo.sh
+        run: chmod +x run-demo.sh
 
       - name: Run the demo script
-        run: ./dbt-spark-demo/run-demo.sh
+        run: ./run-demo.sh
 
       - name: Check script exists
-        run: test -f dbt-spark-demo/run-demo.sh
+        run: test -f ./run-demo.sh
 
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: |
-            dbt-spark-demo/results/test_start.txt
-            dbt-spark-demo/results/test_end.txt
-            dbt-spark-demo/demo/dbt-spark-demo.ipynb
+            results/test_start.txt
+            results/test_end.txt
+            demo/dbt-spark-demo.ipynb
