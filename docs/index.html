@@ -2,11 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2025-06-29">
 
 <title>Demo of testing ETL pipeline using DBT and spark</title>
 <style>
@@ -66,13 +65,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="dbt-spark-demo_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="dbt-spark-demo_files/libs/quarto-html/anchor.min.js"></script>
 <link href="dbt-spark-demo_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="dbt-spark-demo_files/libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="dbt-spark-demo_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="dbt-spark-demo_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="dbt-spark-demo_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="dbt-spark-demo_files/libs/bootstrap/bootstrap-57de619f20ea3c00f7e8a542266039f8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<script src="dbt-spark-demo_files/libs/quarto-diagram/mermaid.min.js"></script>
-<script src="dbt-spark-demo_files/libs/quarto-diagram/mermaid-init.js"></script>
-<link href="dbt-spark-demo_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<link href="dbt-spark-demo_files/libs/bootstrap/bootstrap-af3b0b53a274c7d4e75779d930f447fb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -104,50 +100,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#connection-to-read-table-in-hive-meta-data-store" id="toc-connection-to-read-table-in-hive-meta-data-store" class="nav-link" data-scroll-target="#connection-to-read-table-in-hive-meta-data-store"><span class="header-section-number">2.2.1</span> Connection to read table in Hive meta-data store</a></li>
   </ul></li>
   <li><a href="#variables" id="toc-variables" class="nav-link" data-scroll-target="#variables"><span class="header-section-number">2.3</span> Variables</a></li>
-  <li><a href="#helper-codes" id="toc-helper-codes" class="nav-link" data-scroll-target="#helper-codes"><span class="header-section-number">2.4</span> Helper codes</a></li>
-  <li><a href="#dbt" id="toc-dbt" class="nav-link" data-scroll-target="#dbt"><span class="header-section-number">2.5</span> DBT</a></li>
-  <li><a href="#verify-dbt-setup" id="toc-verify-dbt-setup" class="nav-link" data-scroll-target="#verify-dbt-setup"><span class="header-section-number">2.6</span> Verify DBT setup</a>
-  <ul class="collapse">
-  <li><a href="#profiles.yml" id="toc-profiles.yml" class="nav-link" data-scroll-target="#profiles.yml"><span class="header-section-number">2.6.1</span> profiles.yml</a></li>
-  <li><a href="#dbt_project.yml" id="toc-dbt_project.yml" class="nav-link" data-scroll-target="#dbt_project.yml"><span class="header-section-number">2.6.2</span> dbt_project.yml</a></li>
-  <li><a href="#dbt-debug" id="toc-dbt-debug" class="nav-link" data-scroll-target="#dbt-debug"><span class="header-section-number">2.6.3</span> dbt debug</a></li>
   </ul></li>
-  <li><a href="#dbt-command-comparisons" id="toc-dbt-command-comparisons" class="nav-link" data-scroll-target="#dbt-command-comparisons"><span class="header-section-number">2.7</span> dbt command comparisons</a></li>
-  </ul></li>
-  <li><a href="#prepare-sql" id="toc-prepare-sql" class="nav-link" data-scroll-target="#prepare-sql"><span class="header-section-number">3</span> Prepare SQL</a>
+  <li><a href="#start-demo" id="toc-start-demo" class="nav-link" data-scroll-target="#start-demo"><span class="header-section-number">3</span> Start demo</a>
   <ul>
-  <li><a href="#read-dbt-input-csv" id="toc-read-dbt-input-csv" class="nav-link" data-scroll-target="#read-dbt-input-csv"><span class="header-section-number">3.1</span> Read dbt input csv</a>
+  <li><a href="#helper-codes" id="toc-helper-codes" class="nav-link" data-scroll-target="#helper-codes"><span class="header-section-number">3.1</span> Helper codes</a></li>
+  <li><a href="#dbt" id="toc-dbt" class="nav-link" data-scroll-target="#dbt"><span class="header-section-number">3.2</span> DBT</a></li>
+  <li><a href="#verify-dbt-setup" id="toc-verify-dbt-setup" class="nav-link" data-scroll-target="#verify-dbt-setup"><span class="header-section-number">3.3</span> Verify DBT setup</a>
   <ul class="collapse">
-  <li><a href="#verify-database-before-the-operation" id="toc-verify-database-before-the-operation" class="nav-link" data-scroll-target="#verify-database-before-the-operation"><span class="header-section-number">3.1.1</span> Verify database before the operation</a></li>
+  <li><a href="#profiles.yml" id="toc-profiles.yml" class="nav-link" data-scroll-target="#profiles.yml"><span class="header-section-number">3.3.1</span> profiles.yml</a></li>
+  <li><a href="#dbt_project.yml" id="toc-dbt_project.yml" class="nav-link" data-scroll-target="#dbt_project.yml"><span class="header-section-number">3.3.2</span> dbt_project.yml</a></li>
+  <li><a href="#dbt-debug" id="toc-dbt-debug" class="nav-link" data-scroll-target="#dbt-debug"><span class="header-section-number">3.3.3</span> dbt debug</a></li>
   </ul></li>
-  <li><a href="#dbt-compile" id="toc-dbt-compile" class="nav-link" data-scroll-target="#dbt-compile"><span class="header-section-number">3.2</span> dbt compile</a>
-  <ul class="collapse">
-  <li><a href="#removed-targetcompiled" id="toc-removed-targetcompiled" class="nav-link" data-scroll-target="#removed-targetcompiled"><span class="header-section-number">3.2.0.1</span> removed target/compiled/</a></li>
+  <li><a href="#dbt-command-comparisons" id="toc-dbt-command-comparisons" class="nav-link" data-scroll-target="#dbt-command-comparisons"><span class="header-section-number">3.4</span> dbt command comparisons</a></li>
   </ul></li>
-  <li><a href="#build-your-models-dbt-run" id="toc-build-your-models-dbt-run" class="nav-link" data-scroll-target="#build-your-models-dbt-run"><span class="header-section-number">3.3</span> Build your models (dbt run)</a></li>
-  <li><a href="#delete-database-table-prior-dbt-run-that-will-create-the-table" id="toc-delete-database-table-prior-dbt-run-that-will-create-the-table" class="nav-link" data-scroll-target="#delete-database-table-prior-dbt-run-that-will-create-the-table"><span class="header-section-number">3.4</span> Delete database table prior dbt run that will create the table</a></li>
-  <li><a href="#test-model-using-dbt" id="toc-test-model-using-dbt" class="nav-link" data-scroll-target="#test-model-using-dbt"><span class="header-section-number">3.5</span> test model using dbt</a>
-  <ul class="collapse">
-  <li><a href="#test-name-and-its-test-vectors" id="toc-test-name-and-its-test-vectors" class="nav-link" data-scroll-target="#test-name-and-its-test-vectors"><span class="header-section-number">3.5.0.1</span> test name and its test vectors</a></li>
-  <li><a href="#run-test" id="toc-run-test" class="nav-link" data-scroll-target="#run-test"><span class="header-section-number">3.5.0.2</span> run test</a></li>
-  </ul></li>
-  </ul></li>
-  <li><a href="#apendix" id="toc-apendix" class="nav-link" data-scroll-target="#apendix"><span class="header-section-number">4</span> Apendix</a>
+  <li><a href="#prepare-sql" id="toc-prepare-sql" class="nav-link" data-scroll-target="#prepare-sql"><span class="header-section-number">4</span> Prepare SQL</a>
   <ul>
-  <li><a href="#check-the-model-built" id="toc-check-the-model-built" class="nav-link" data-scroll-target="#check-the-model-built"><span class="header-section-number">4.1</span> check the model built</a>
+  <li><a href="#read-dbt-input-csv" id="toc-read-dbt-input-csv" class="nav-link" data-scroll-target="#read-dbt-input-csv"><span class="header-section-number">4.1</span> Read dbt input csv</a>
   <ul class="collapse">
-  <li><a href="#check-the-model-built-using-pyspark-in-progress" id="toc-check-the-model-built-using-pyspark-in-progress" class="nav-link" data-scroll-target="#check-the-model-built-using-pyspark-in-progress"><span class="header-section-number">4.1.1</span> Check the model built using Pyspark (In progress)</a></li>
-  <li><a href="#test-the-built-model-using-the-test-model" id="toc-test-the-built-model-using-the-test-model" class="nav-link" data-scroll-target="#test-the-built-model-using-the-test-model"><span class="header-section-number">4.1.2</span> Test the built model (using the test model)</a></li>
+  <li><a href="#verify-database-before-the-operation" id="toc-verify-database-before-the-operation" class="nav-link" data-scroll-target="#verify-database-before-the-operation"><span class="header-section-number">4.1.1</span> Verify database before the operation</a></li>
+  </ul></li>
+  <li><a href="#dbt-compile" id="toc-dbt-compile" class="nav-link" data-scroll-target="#dbt-compile"><span class="header-section-number">4.2</span> dbt compile</a>
+  <ul class="collapse">
+  <li><a href="#removed-targetcompiled" id="toc-removed-targetcompiled" class="nav-link" data-scroll-target="#removed-targetcompiled"><span class="header-section-number">4.2.0.1</span> removed target/compiled/</a></li>
+  </ul></li>
+  <li><a href="#build-your-models-dbt-run" id="toc-build-your-models-dbt-run" class="nav-link" data-scroll-target="#build-your-models-dbt-run"><span class="header-section-number">4.3</span> Build your models (dbt run)</a></li>
+  <li><a href="#delete-database-table-prior-dbt-run-that-will-create-the-table" id="toc-delete-database-table-prior-dbt-run-that-will-create-the-table" class="nav-link" data-scroll-target="#delete-database-table-prior-dbt-run-that-will-create-the-table"><span class="header-section-number">4.4</span> Delete database table prior dbt run that will create the table</a></li>
+  <li><a href="#test-model-using-dbt" id="toc-test-model-using-dbt" class="nav-link" data-scroll-target="#test-model-using-dbt"><span class="header-section-number">4.5</span> test model using dbt</a>
+  <ul class="collapse">
+  <li><a href="#test-name-and-its-test-vectors" id="toc-test-name-and-its-test-vectors" class="nav-link" data-scroll-target="#test-name-and-its-test-vectors"><span class="header-section-number">4.5.0.1</span> test name and its test vectors</a></li>
+  <li><a href="#run-test" id="toc-run-test" class="nav-link" data-scroll-target="#run-test"><span class="header-section-number">4.5.0.2</span> run test</a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#todo" id="toc-todo" class="nav-link" data-scroll-target="#todo"><span class="header-section-number">5</span> Todo</a>
+  <li><a href="#apendix" id="toc-apendix" class="nav-link" data-scroll-target="#apendix"><span class="header-section-number">5</span> Apendix</a>
   <ul>
-  <li><a href="#audit-compliance" id="toc-audit-compliance" class="nav-link" data-scroll-target="#audit-compliance"><span class="header-section-number">5.1</span> Audit compliance</a>
+  <li><a href="#check-the-model-built" id="toc-check-the-model-built" class="nav-link" data-scroll-target="#check-the-model-built"><span class="header-section-number">5.1</span> check the model built</a>
   <ul class="collapse">
-  <li><a href="#time-tracing-with-time-stamping" id="toc-time-tracing-with-time-stamping" class="nav-link" data-scroll-target="#time-tracing-with-time-stamping"><span class="header-section-number">5.1.1</span> time tracing with time-stamping</a></li>
-  <li><a href="#file-tracing-with-source-and-targets-file-path-tablename" id="toc-file-tracing-with-source-and-targets-file-path-tablename" class="nav-link" data-scroll-target="#file-tracing-with-source-and-targets-file-path-tablename"><span class="header-section-number">5.1.2</span> File tracing with source and targets file path, tablename</a></li>
+  <li><a href="#check-the-model-built-using-pyspark-in-progress" id="toc-check-the-model-built-using-pyspark-in-progress" class="nav-link" data-scroll-target="#check-the-model-built-using-pyspark-in-progress"><span class="header-section-number">5.1.1</span> Check the model built using Pyspark (In progress)</a></li>
+  <li><a href="#test-the-built-model-using-the-test-model" id="toc-test-the-built-model-using-the-test-model" class="nav-link" data-scroll-target="#test-the-built-model-using-the-test-model"><span class="header-section-number">5.1.2</span> Test the built model (using the test model)</a></li>
+  <li><a href="#dbt-test" id="toc-dbt-test" class="nav-link" data-scroll-target="#dbt-test"><span class="header-section-number">5.1.3</span> dbt test</a></li>
   </ul></li>
   </ul></li>
+  <li><a href="#end-of-notebook" id="toc-end-of-notebook" class="nav-link" data-scroll-target="#end-of-notebook"><span class="header-section-number">6</span> End of notebook</a></li>
   </ul>
 <div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="https://github.com/VincentChong123/dbt-spark-demo.git"><i class="bi bi-link-45deg"></i>github.com project repo</a></li></ul></div></nav>
 </div>
@@ -168,7 +161,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 29, 2025</p>
+      <p class="date">last-modified</p>
     </div>
   </div>
   
@@ -180,33 +173,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<p><span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at ‘<a href="#papermill-error-cell">In [7]</a>’.</span></p>
 <section id="introduction" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
 <p>This is a demo of dbt work flow using an data ingestion as an example. In finance data ETL (Extract, Transform, Load) important to have sanitity check of input data, to avoid the ingesting invalid data….</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">flowchart LR
-   empty["."] --&gt; DBT["Container: dbt-core 
-       plugin: dbt-
-  DBT-pyspark[Hive]"] --&gt; |Generate SQL with 'dbt seed', 'dbt compile'| T(Container: Spark-Thrift)
-  T --&gt;|Query using the generated SQL| Storage[(Container: Postgre Hive metadata store)]
-
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-<div id="ae9c7095" class="cell" data-execution_count="1">
+<div id="e897f7e7" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.011785,&quot;end_time&quot;:&quot;2025-06-30T10:01:48.812676&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T10:01:48.800891&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[&quot;skip&quot;]" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pd.read_csv(<span class="st">"/usr/app/demo/dbt_spark_demo_prj/seeds/transactions/raw__transactions.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ```{mermaid}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># flowchart LR</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#    empty["."] --&gt; DBT["Container: dbt-core </span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#        plugin: dbt-</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   DBT-pyspark[Hive]"] --&gt; |Generate SQL with 'dbt seed', 'dbt compile'| T(Container: Spark-Thrift)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   T --&gt;|Query using the generated SQL| Storage[(Container: Postgre Hive metadata store)]</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="1">
+</div>
+<div id="ae9c7095" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.09699,&quot;end_time&quot;:&quot;2025-06-30T10:01:49.916884&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T10:01:48.819894&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pd.read_csv(<span class="st">"/usr/app/demo/dbt_spark_demo_prj/seeds/transactions/raw__transactions.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="2">
 <div>
 
 
@@ -271,10 +261,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="project-file-structure" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="project-file-structure"><span class="header-section-number">1.1</span> Project file structure</h2>
-<div id="b28d4077" class="cell" data-execution_count="2">
+<div id="b28d4077" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.418164,&quot;end_time&quot;:&quot;2025-06-30T10:01:50.357751&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T10:01:49.939587&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tree <span class="op">-</span>L <span class="dv">2</span> <span class="op">--</span>sort<span class="op">=</span><span class="st">"name"</span> <span class="op">/</span>usr<span class="op">/</span>app <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*</span><span class="er">\</span><span class="st">.toml$"</span> <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*</span><span class="er">\</span><span class="st">.md$"</span> <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*files$"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tree <span class="op">-</span>L <span class="dv">2</span> <span class="op">--</span>sort<span class="op">=</span><span class="st">"name"</span> <span class="op">/</span>usr<span class="op">/</span>app <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*</span><span class="er">\</span><span class="st">.toml$"</span> <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*</span><span class="er">\</span><span class="st">.md$"</span> <span class="op">|</span> grep <span class="op">-</span>v <span class="st">".*files$"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
@@ -292,20 +282,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 ├── <span class="ansi-blue-fg ansi-bold">dbt-spark</span>
 
-│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">dagger</span>
-
-│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">dbt</span>
-
-│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">docker</span>
-
-│&nbsp;&nbsp; ├── docker-compose.yml
-
-│&nbsp;&nbsp; ├── <span class="ansi-blue-fg ansi-bold">scripts</span>
-
-│&nbsp;&nbsp; ├── test.env.example
-
-│&nbsp;&nbsp; └── <span class="ansi-blue-fg ansi-bold">tests</span>
-
 ├── <span class="ansi-blue-fg ansi-bold">demo</span>
 
 │&nbsp;&nbsp; ├── dbt-spark-demo.html
@@ -318,9 +294,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 │&nbsp;&nbsp; ├── generate-documentation.sh
 
-│&nbsp;&nbsp; └── profiles.yml
+│&nbsp;&nbsp; ├── profiles.yml
 
-└── docker-common.sh
+│&nbsp;&nbsp; └── <span class="ansi-blue-fg ansi-bold">results</span>
+
+├── <span class="ansi-blue-fg ansi-bold">docs</span>
+
+│&nbsp;&nbsp; └── index.html
+
+├── index.html
+
+└── <span class="ansi-green-fg ansi-bold">run-demo.sh</span>
 
 
 </pre>
@@ -335,27 +319,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="2.1" class="anchored" data-anchor-id="docker"><span class="header-section-number">2.1</span> Docker</h2>
 <section id="shared-network-for-docker-containers" class="level3" data-number="2.1.1">
 <h3 data-number="2.1.1" class="anchored" data-anchor-id="shared-network-for-docker-containers"><span class="header-section-number">2.1.1</span> Shared network for docker containers</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ./docker-common.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ./docker-common.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="install-jupyter-notebook-for-running-this-demo-in-notebook" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="install-jupyter-notebook-for-running-this-demo-in-notebook"><span class="header-section-number">2.2</span> Install jupyter notebook for running this demo in notebook</h2>
 <p>This notebook is executed using jupyer-notebook kernel (http://127.0.0.1:8888) of the loaded custom-dbt container. The container is loaded using command below</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook <span class="at">--NotebookApp.token</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.password</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.disable_check_xsrf</span><span class="op">=</span>True <span class="at">--allow-root</span> <span class="at">--ip</span><span class="op">=</span>0.0.0.0 <span class="at">--port</span><span class="op">=</span>8888 <span class="at">--no-browser</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">jupyter</span> notebook <span class="at">--NotebookApp.token</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.password</span><span class="op">=</span><span class="st">''</span> <span class="at">--NotebookApp.disable_check_xsrf</span><span class="op">=</span>True <span class="at">--allow-root</span> <span class="at">--ip</span><span class="op">=</span>0.0.0.0 <span class="at">--port</span><span class="op">=</span>8888 <span class="at">--no-browser</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>use allow-root for demo purpose only, not for production due to cyber security</p>
-<div id="8a58c3eb" class="cell" data-execution_count="3">
+<div id="8a58c3eb" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.019035,&quot;end_time&quot;:&quot;2025-06-30T10:01:50.429635&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T10:01:50.410600&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>export TZ<span class="op">=</span><span class="st">'Asia/Singapore'</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>date</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>which python</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>pwd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>export TZ<span class="op">=</span><span class="st">'Asia/Singapore'</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>date</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>which python</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>pwd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Sun Jun 29 23:09:16 +08 2025
+<pre><code>Mon Jun 30 18:01:50 +08 2025
 /usr/local/bin/python
-/usr/app/demo</code></pre>
+/usr/app/dbt</code></pre>
 </div>
 </div>
 <section id="connection-to-read-table-in-hive-meta-data-store" class="level3" data-number="2.2.1">
@@ -364,256 +348,398 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="variables" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="variables"><span class="header-section-number">2.3</span> Variables</h2>
-<div id="f86badf3" class="cell" data-execution_count="4">
+<div id="f86badf3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.183072,&quot;end_time&quot;:&quot;2025-06-30T10:01:51.650759&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T10:01:50.467687&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pwd</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cd ..<span class="op">/</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pwd</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>spark_thrift_service_name<span class="op">=</span>os.getenv(<span class="st">'SPARK_CONTAINER_SERVICE_NAME'</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>dbt_project_dir<span class="op">=</span>os.getenv(<span class="st">'DBT_PROJECT_DIR'</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>dbt_project_name<span class="op">=</span>os.getenv(<span class="st">'DBT_PROJECT_NAME'</span>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(spark_thrift_service_name)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dbt_project_dir)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dbt_project_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pwd</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cd ..<span class="op">/</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pwd</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>spark_thrift_service_name<span class="op">=</span>os.getenv(<span class="st">'SPARK_CONTAINER_SERVICE_NAME'</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>dbt_project_dir<span class="op">=</span>os.getenv(<span class="st">'DBT_PROJECT_DIR'</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>dbt_project_name<span class="op">=</span>os.getenv(<span class="st">'DBT_PROJECT_NAME'</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(spark_thrift_service_name)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dbt_project_dir)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dbt_project_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>/usr/app/demo
-/usr/app/demo
+<pre><code>/usr/app/dbt
+/usr/app/dbt
 dbt-spark3-thrift
 /usr/app/dbt/dbt_spark_demo_prj
 dbt_spark_demo_prj</code></pre>
 </div>
 </div>
 </section>
-<section id="helper-codes" class="level2" data-number="2.4">
-<h2 data-number="2.4" class="anchored" data-anchor-id="helper-codes"><span class="header-section-number">2.4</span> Helper codes</h2>
-<div id="b9f4df75" class="cell" data-execution_count="5">
+</section>
+<section id="start-demo" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Start demo</h1>
+<div id="34c662e5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:0.79135,&quot;end_time&quot;:&quot;2025-06-30T10:01:52.465434&quot;,&quot;exception&quot;:false,&quot;start_time&quot;:&quot;2025-06-30T10:01:51.674084&quot;,&quot;status&quot;:&quot;completed&quot;}}" data-tags="[]" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyhive <span class="im">import</span> hive</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sqlalchemy.engine <span class="im">import</span> create_engine</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> check_table(host<span class="op">=</span>spark_thrift_service_name, message_to_be_printed<span class="op">=</span><span class="st">""</span>):</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with hive.Connection(host=spark_thrift_service_name, port=10000, </span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                     #    username='', </span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                     database='default') as conn:</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     # Query all tables in the default database</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     df = pd.read_sql("SHOW TABLES", conn)</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     # Display tables</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     display(df)</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(message_to_be_printed)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    engine <span class="op">=</span> create_engine(<span class="ss">f'hive://</span><span class="sc">{</span>spark_thrift_service_name<span class="sc">}</span><span class="ss">:10000/default'</span>)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.read_sql(<span class="st">"SHOW TABLES;"</span>, engine)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># display(df)</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    display(df)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> show_table_details(table_name, database_name<span class="op">=</span><span class="st">'default'</span>,</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># host=spark_thrift_service_name,</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>                        port<span class="op">=</span><span class="dv">10000</span>):</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># sqlAlchemy api fail here due to "sqlAlchemy relection": </span><span class="al">TODO</span><span class="co"> investigate root cause</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># engine = create_engine(f'hive://{spark_thrift_service_name}:10000/default')</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># df = pd.read_sql(f"select * from {table_name} limit 10", engine)</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> hive.Connection(host<span class="op">=</span>spark_thrift_service_name, port<span class="op">=</span>port, database<span class="op">=</span>database_name) <span class="im">as</span> conn:</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> pd.read_sql(<span class="ss">f"select * from </span><span class="sc">{</span>database_name<span class="sc">}</span><span class="ss">.</span><span class="sc">{</span>table_name<span class="sc">}</span><span class="ss">"</span>, conn)</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        display(df)</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>check_table()</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"------------"</span>)</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co"># show_table_details("transactions")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>filepath<span class="op">=</span><span class="st">"/usr/app/demo/results/test_start.txt"</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>echo start test at <span class="op">&gt;</span> $filepath </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export TZ<span class="op">=</span><span class="st">'Asia/Singapore'</span><span class="op">;</span> date <span class="op">&gt;&gt;</span> $filepath</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+</div>
+<section id="helper-codes" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="helper-codes"><span class="header-section-number">3.1</span> Helper codes</h2>
+<p><span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span></p>
+<div id="b9f4df75" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:1.52943,&quot;end_time&quot;:&quot;2025-06-30T10:01:54.018428&quot;,&quot;exception&quot;:true,&quot;start_time&quot;:&quot;2025-06-30T10:01:52.488998&quot;,&quot;status&quot;:&quot;failed&quot;}}" data-tags="[]" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyhive <span class="im">import</span> hive</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sqlalchemy.engine <span class="im">import</span> create_engine</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> check_table(host<span class="op">=</span>spark_thrift_service_name, message_to_be_printed<span class="op">=</span><span class="st">""</span>):</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with hive.Connection(host=spark_thrift_service_name, port=10000, </span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                     #    username='', </span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#                     database='default') as conn:</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     # Query all tables in the default database</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     df = pd.read_sql("SHOW TABLES", conn)</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     # Display tables</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">#     display(df)</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(message_to_be_printed)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    engine <span class="op">=</span> create_engine(<span class="ss">f'hive://</span><span class="sc">{</span>spark_thrift_service_name<span class="sc">}</span><span class="ss">:10000/default'</span>)</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    df <span class="op">=</span> pd.read_sql(<span class="st">"SHOW TABLES;"</span>, engine)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># display(df)</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    display(df)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> show_table_details(table_name, database_name<span class="op">=</span><span class="st">'default'</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>                        <span class="co"># host=spark_thrift_service_name,</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>                        port<span class="op">=</span><span class="dv">10000</span>):</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># sqlAlchemy api fail here due to "sqlAlchemy relection": </span><span class="al">TODO</span><span class="co"> investigate root cause</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># engine = create_engine(f'hive://{spark_thrift_service_name}:10000/default')</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># df = pd.read_sql(f"select * from {table_name} limit 10", engine)</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> hive.Connection(host<span class="op">=</span>spark_thrift_service_name, port<span class="op">=</span>port, database<span class="op">=</span>database_name) <span class="im">as</span> conn:</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>        df <span class="op">=</span> pd.read_sql(<span class="ss">f"select * from </span><span class="sc">{</span>database_name<span class="sc">}</span><span class="ss">.</span><span class="sc">{</span>table_name<span class="sc">}</span><span class="ss">"</span>, conn)</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        display(df)</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>check_table()</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"------------"</span>)</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co"># show_table_details("transactions")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>failed to resolve sockaddr for dbt-spark3-thrift:10000
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/thrift/transport/TSocket.py", line 123, in open
+    addrs = self._resolveAddr()
+            ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/thrift/transport/TSocket.py", line 37, in _resolveAddr
+    return socket.getaddrinfo(self.host,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/socket.py", line 962, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -3] Temporary failure in name resolution</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code></code></pre>
 </div>
-<div class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">namespace</th>
-<th data-quarto-table-cell-role="th">tableName</th>
-<th data-quarto-table-cell-role="th">isTemporary</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
-<td>default</td>
-<td>raw__transactions</td>
-<td>False</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">1</td>
-<td>default</td>
-<td>transactions</td>
-<td>False</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>------------</code></pre>
-</div>
-</div>
-</section>
-<section id="dbt" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="dbt"><span class="header-section-number">2.5</span> DBT</h2>
-<div id="fdf3c236" class="cell" data-execution_count="6">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
+<div class="cell-output cell-output-error">
 <div class="ansi-escaped-output">
-<pre>Core:
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">gaierror</span>                                  Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/thrift/transport/TSocket.py:123</span>, in <span class="ansi-cyan-fg">TSocket.open</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    122</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">123</span>     addrs = <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_resolveAddr</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    124</span> <span style="font-weight:bold;color:rgb(0,135,0)">except</span> socket.gaierror <span style="font-weight:bold;color:rgb(0,135,0)">as</span> gai:
 
-  - installed: 1.10.2
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/thrift/transport/TSocket.py:37</span>, in <span class="ansi-cyan-fg">TSocketBase._resolveAddr</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">     36</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">37</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">socket</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">getaddrinfo</span><span class="ansi-yellow-bg">(</span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">host</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">     38</span> <span class="ansi-yellow-bg">                              </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">port</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">     39</span> <span class="ansi-yellow-bg">                              </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_socket_family</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">     40</span> <span class="ansi-yellow-bg">                              </span><span class="ansi-yellow-bg">socket</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">SOCK_STREAM</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">     41</span> <span class="ansi-yellow-bg">                              </span><span class="ansi-green-fg ansi-yellow-bg">0</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">     42</span> <span class="ansi-yellow-bg">                              </span><span class="ansi-yellow-bg">socket</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">AI_PASSIVE</span><span class="ansi-yellow-bg">)</span>
 
-  - latest:    1.10.2 - <span class="ansi-green-fg">Up to date!</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/socket.py:962</span>, in <span class="ansi-cyan-fg">getaddrinfo</span><span class="ansi-blue-fg">(host, port, family, type, proto, flags)</span>
+<span class="ansi-green-fg">    961</span> addrlist = []
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">962</span> <span style="font-weight:bold;color:rgb(0,135,0)">for</span> res <span style="font-weight:bold;color:rgb(175,0,255)">in</span> <span class="ansi-yellow-bg">_socket</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">getaddrinfo</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">host</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">port</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">family</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">type</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">proto</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">flags</span><span class="ansi-yellow-bg">)</span>:
+<span class="ansi-green-fg">    963</span>     af, socktype, proto, canonname, sa = res
 
+<span class="ansi-red-fg">gaierror</span>: [Errno -3] Temporary failure in name resolution
 
+During handling of the above exception, another exception occurred:
 
-Plugins:
+<span class="ansi-red-fg">TTransportException</span>                       Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 34</span>
+<span class="ansi-green-fg">     29</span>         df = pd.read_sql(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">select * from </span><span style="font-weight:bold;color:rgb(175,95,135)">{</span>database_name<span style="font-weight:bold;color:rgb(175,95,135)">}</span><span class="ansi-yellow-fg">.</span><span style="font-weight:bold;color:rgb(175,95,135)">{</span>table_name<span style="font-weight:bold;color:rgb(175,95,135)">}</span><span class="ansi-yellow-fg">"</span>, conn)
+<span class="ansi-green-fg">     31</span>         display(df)
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">34</span> <span class="ansi-yellow-bg">check_table</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">     35</span> <span style="color:rgb(0,135,0)">print</span>(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">------------</span><span class="ansi-yellow-fg">"</span>)
+<span class="ansi-green-fg">     36</span> <span style="font-style:italic;color:rgb(95,135,135)"># show_table_details("transactions")</span>
 
-  - spark: 1.9.2 - <span class="ansi-green-fg">Up to date!</span>
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 17</span>, in <span class="ansi-cyan-fg">check_table</span><span class="ansi-blue-fg">(host, message_to_be_printed)</span>
+<span class="ansi-green-fg">     15</span> <span style="color:rgb(0,135,0)">print</span>(message_to_be_printed)
+<span class="ansi-green-fg">     16</span> engine = create_engine(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">hive://</span><span style="font-weight:bold;color:rgb(175,95,135)">{</span>spark_thrift_service_name<span style="font-weight:bold;color:rgb(175,95,135)">}</span><span class="ansi-yellow-fg">:10000/default</span><span class="ansi-yellow-fg">'</span>)
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">17</span> df = <span class="ansi-yellow-bg">pd</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read_sql</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">SHOW TABLES;</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">engine</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">     18</span> <span style="font-style:italic;color:rgb(95,135,135)"># display(df)</span>
+<span class="ansi-green-fg">     19</span> display(df)
 
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pandas/io/sql.py:706</span>, in <span class="ansi-cyan-fg">read_sql</span><span class="ansi-blue-fg">(sql, con, index_col, coerce_float, params, parse_dates, columns, chunksize, dtype_backend, dtype)</span>
+<span class="ansi-green-fg">    703</span>     dtype_backend = <span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">numpy</span><span class="ansi-yellow-fg">"</span>  <span style="font-style:italic;color:rgb(95,135,135)"># type: ignore[assignment]</span>
+<span class="ansi-green-fg">    704</span> <span style="font-weight:bold;color:rgb(0,135,0)">assert</span> dtype_backend <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> lib.no_default
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">706</span> <span style="font-weight:bold;color:rgb(0,135,0)">with</span> <span class="ansi-yellow-bg">pandasSQL_builder</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">con</span><span class="ansi-yellow-bg">)</span> <span style="font-weight:bold;color:rgb(0,135,0)">as</span> pandas_sql:
+<span class="ansi-green-fg">    707</span>     <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">isinstance</span>(pandas_sql, SQLiteDatabase):
+<span class="ansi-green-fg">    708</span>         <span style="font-weight:bold;color:rgb(0,135,0)">return</span> pandas_sql.read_query(
+<span class="ansi-green-fg">    709</span>             sql,
+<span class="ansi-green-fg">    710</span>             index_col=index_col,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    716</span>             dtype=dtype,
+<span class="ansi-green-fg">    717</span>         )
 
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pandas/io/sql.py:908</span>, in <span class="ansi-cyan-fg">pandasSQL_builder</span><span class="ansi-blue-fg">(con, schema, need_transaction)</span>
+<span class="ansi-green-fg">    905</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> <span style="font-weight:bold;color:rgb(215,95,95)">ImportError</span>(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Using URI string without sqlalchemy installed.</span><span class="ansi-yellow-fg">"</span>)
+<span class="ansi-green-fg">    907</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> sqlalchemy <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span> <span style="font-weight:bold;color:rgb(175,0,255)">and</span> <span style="color:rgb(0,135,0)">isinstance</span>(con, (<span style="color:rgb(0,135,0)">str</span>, sqlalchemy.engine.Connectable)):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">908</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">SQLDatabase</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">con</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">schema</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">need_transaction</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    910</span> adbc = import_optional_dependency(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">adbc_driver_manager.dbapi</span><span class="ansi-yellow-fg">"</span>, errors=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">ignore</span><span class="ansi-yellow-fg">"</span>)
+<span class="ansi-green-fg">    911</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> adbc <span style="font-weight:bold;color:rgb(175,0,255)">and</span> <span style="color:rgb(0,135,0)">isinstance</span>(con, adbc.Connection):
 
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pandas/io/sql.py:1648</span>, in <span class="ansi-cyan-fg">SQLDatabase.__init__</span><span class="ansi-blue-fg">(self, con, schema, need_transaction)</span>
+<span class="ansi-green-fg">   1646</span>     <span style="color:rgb(0,135,0)">self</span>.exit_stack.callback(con.dispose)
+<span class="ansi-green-fg">   1647</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">isinstance</span>(con, Engine):
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1648</span>     con = <span style="color:rgb(0,135,0)">self</span>.exit_stack.enter_context(<span class="ansi-yellow-bg">con</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">connect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>)
+<span class="ansi-green-fg">   1649</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> need_transaction <span style="font-weight:bold;color:rgb(175,0,255)">and</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> con.in_transaction():
+<span class="ansi-green-fg">   1650</span>     <span style="color:rgb(0,135,0)">self</span>.exit_stack.enter_context(con.begin())
 
-</pre>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:3273</span>, in <span class="ansi-cyan-fg">Engine.connect</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">   3250</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">connect</span>(<span style="color:rgb(0,135,0)">self</span>) -&gt; Connection:
+<span class="ansi-green-fg">   3251</span> <span style="color:rgb(188,188,188)">    </span><span style="font-style:italic" class="ansi-yellow-fg">"""Return a new :class:`_engine.Connection` object.</span>
+<span class="ansi-green-fg">   3252</span> 
+<span class="ansi-green-fg">   3253</span> <span style="font-style:italic" class="ansi-yellow-fg">    The :class:`_engine.Connection` acts as a Python context manager, so</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   3270</span> 
+<span class="ansi-green-fg">   3271</span> <span style="font-style:italic" class="ansi-yellow-fg">    """</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3273</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_connection_cls</span><span class="ansi-yellow-bg">(</span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:145</span>, in <span class="ansi-cyan-fg">Connection.__init__</span><span class="ansi-blue-fg">(self, engine, connection, _has_events, _allow_revalidate, _allow_autobegin)</span>
+<span class="ansi-green-fg">    143</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> connection <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    144</span>     <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">145</span>         <span style="color:rgb(0,135,0)">self</span>._dbapi_connection = <span class="ansi-yellow-bg">engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">raw_connection</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    146</span>     <span style="font-weight:bold;color:rgb(0,135,0)">except</span> dialect.loaded_dbapi.Error <span style="font-weight:bold;color:rgb(0,135,0)">as</span> err:
+<span class="ansi-green-fg">    147</span>         Connection._handle_dbapi_exception_noconnection(
+<span class="ansi-green-fg">    148</span>             err, dialect, engine
+<span class="ansi-green-fg">    149</span>         )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py:3297</span>, in <span class="ansi-cyan-fg">Engine.raw_connection</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">   3275</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">raw_connection</span>(<span style="color:rgb(0,135,0)">self</span>) -&gt; PoolProxiedConnection:
+<span class="ansi-green-fg">   3276</span> <span style="color:rgb(188,188,188)">    </span><span style="font-style:italic" class="ansi-yellow-fg">"""Return a "raw" DBAPI connection from the connection pool.</span>
+<span class="ansi-green-fg">   3277</span> 
+<span class="ansi-green-fg">   3278</span> <span style="font-style:italic" class="ansi-yellow-fg">    The returned object is a proxied version of the DBAPI</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   3295</span> 
+<span class="ansi-green-fg">   3296</span> <span style="font-style:italic" class="ansi-yellow-fg">    """</span>
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">3297</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">pool</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">connect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:449</span>, in <span class="ansi-cyan-fg">Pool.connect</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    441</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">connect</span>(<span style="color:rgb(0,135,0)">self</span>) -&gt; PoolProxiedConnection:
+<span class="ansi-green-fg">    442</span> <span style="color:rgb(188,188,188)">    </span><span style="font-style:italic" class="ansi-yellow-fg">"""Return a DBAPI connection from the pool.</span>
+<span class="ansi-green-fg">    443</span> 
+<span class="ansi-green-fg">    444</span> <span style="font-style:italic" class="ansi-yellow-fg">    The connection is instrumented such that when its</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    447</span> 
+<span class="ansi-green-fg">    448</span> <span style="font-style:italic" class="ansi-yellow-fg">    """</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">449</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_ConnectionFairy</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_checkout</span><span class="ansi-yellow-bg">(</span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:1264</span>, in <span class="ansi-cyan-fg">_ConnectionFairy._checkout</span><span class="ansi-blue-fg">(cls, pool, threadconns, fairy)</span>
+<span class="ansi-green-fg">   1256</span> <span style="color:rgb(175,0,255)">@classmethod</span>
+<span class="ansi-green-fg">   1257</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">_checkout</span>(
+<span class="ansi-green-fg">   1258</span>     <span style="color:rgb(0,135,0)">cls</span>,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1261</span>     fairy: Optional[_ConnectionFairy] = <span style="font-weight:bold;color:rgb(0,135,0)">None</span>,
+<span class="ansi-green-fg">   1262</span> ) -&gt; _ConnectionFairy:
+<span class="ansi-green-fg">   1263</span>     <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> fairy:
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1264</span>         fairy = <span class="ansi-yellow-bg">_ConnectionRecord</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">checkout</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">pool</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1266</span>         <span style="font-weight:bold;color:rgb(0,135,0)">if</span> threadconns <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">   1267</span>             threadconns.current = weakref.ref(fairy)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:713</span>, in <span class="ansi-cyan-fg">_ConnectionRecord.checkout</span><span class="ansi-blue-fg">(cls, pool)</span>
+<span class="ansi-green-fg">    711</span>     rec = cast(_ConnectionRecord, pool._do_get())
+<span class="ansi-green-fg">    712</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">713</span>     rec = <span class="ansi-yellow-bg">pool</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_do_get</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    715</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">    716</span>     dbapi_connection = rec.get_connection()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/impl.py:179</span>, in <span class="ansi-cyan-fg">QueuePool._do_get</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    177</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="color:rgb(0,135,0)">self</span>._create_connection()
+<span class="ansi-green-fg">    178</span> <span style="font-weight:bold;color:rgb(0,135,0)">except</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">179</span> <span class="ansi-yellow-bg">    </span><span style="font-weight:bold;color:rgb(0,135,0)" class="ansi-yellow-bg">with</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">util</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">safe_reraise</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">:</span>
+<span class="ansi-green-fg">    180</span> <span class="ansi-yellow-bg">        </span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_dec_overflow</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    181</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:224</span>, in <span class="ansi-cyan-fg">safe_reraise.__exit__</span><span class="ansi-blue-fg">(self, type_, value, traceback)</span>
+<span class="ansi-green-fg">    222</span>     <span style="font-weight:bold;color:rgb(0,135,0)">assert</span> exc_value <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    223</span>     <span style="color:rgb(0,135,0)">self</span>._exc_info = <span style="font-weight:bold;color:rgb(0,135,0)">None</span>  <span style="font-style:italic;color:rgb(95,135,135)"># remove potential circular references</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">224</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> exc_value.with_traceback(exc_tb)
+<span class="ansi-green-fg">    225</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    226</span>     <span style="color:rgb(0,135,0)">self</span>._exc_info = <span style="font-weight:bold;color:rgb(0,135,0)">None</span>  <span style="font-style:italic;color:rgb(95,135,135)"># remove potential circular references</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/impl.py:177</span>, in <span class="ansi-cyan-fg">QueuePool._do_get</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    175</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">self</span>._inc_overflow():
+<span class="ansi-green-fg">    176</span>     <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">177</span>         <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_create_connection</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    178</span>     <span style="font-weight:bold;color:rgb(0,135,0)">except</span>:
+<span class="ansi-green-fg">    179</span>         <span style="font-weight:bold;color:rgb(0,135,0)">with</span> util.safe_reraise():
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:390</span>, in <span class="ansi-cyan-fg">Pool._create_connection</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    387</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">_create_connection</span>(<span style="color:rgb(0,135,0)">self</span>) -&gt; ConnectionPoolEntry:
+<span class="ansi-green-fg">    388</span> <span style="color:rgb(188,188,188)">    </span><span style="font-style:italic" class="ansi-yellow-fg">"""Called by subclasses to create a new ConnectionRecord."""</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">390</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_ConnectionRecord</span><span class="ansi-yellow-bg">(</span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:675</span>, in <span class="ansi-cyan-fg">_ConnectionRecord.__init__</span><span class="ansi-blue-fg">(self, pool, connect)</span>
+<span class="ansi-green-fg">    673</span> <span style="color:rgb(0,135,0)">self</span>.__pool = pool
+<span class="ansi-green-fg">    674</span> <span style="font-weight:bold;color:rgb(0,135,0)">if</span> connect:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">675</span>     <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">__connect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    676</span> <span style="color:rgb(0,135,0)">self</span>.finalize_callback = deque()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:901</span>, in <span class="ansi-cyan-fg">_ConnectionRecord.__connect</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    899</span>     <span style="color:rgb(0,135,0)">self</span>.fresh = <span style="font-weight:bold;color:rgb(0,135,0)">True</span>
+<span class="ansi-green-fg">    900</span> <span style="font-weight:bold;color:rgb(0,135,0)">except</span> <span style="font-weight:bold;color:rgb(215,95,95)">BaseException</span> <span style="font-weight:bold;color:rgb(0,135,0)">as</span> e:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">901</span> <span class="ansi-yellow-bg">    </span><span style="font-weight:bold;color:rgb(0,135,0)" class="ansi-yellow-bg">with</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">util</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">safe_reraise</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span><span class="ansi-yellow-bg">:</span>
+<span class="ansi-green-fg">    902</span> <span class="ansi-yellow-bg">        </span><span class="ansi-yellow-bg">pool</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">logger</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">debug</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-fg ansi-yellow-bg">Error on connect(): </span><span style="font-weight:bold;color:rgb(175,95,135)" class="ansi-yellow-bg">%s</span><span class="ansi-yellow-fg ansi-yellow-bg">"</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">e</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    903</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    904</span>     <span style="font-style:italic;color:rgb(95,135,135)"># in SQLAlchemy 1.4 the first_connect event is not used by</span>
+<span class="ansi-green-fg">    905</span>     <span style="font-style:italic;color:rgb(95,135,135)"># the engine, so this will usually not be set</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:224</span>, in <span class="ansi-cyan-fg">safe_reraise.__exit__</span><span class="ansi-blue-fg">(self, type_, value, traceback)</span>
+<span class="ansi-green-fg">    222</span>     <span style="font-weight:bold;color:rgb(0,135,0)">assert</span> exc_value <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>
+<span class="ansi-green-fg">    223</span>     <span style="color:rgb(0,135,0)">self</span>._exc_info = <span style="font-weight:bold;color:rgb(0,135,0)">None</span>  <span style="font-style:italic;color:rgb(95,135,135)"># remove potential circular references</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">224</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> exc_value.with_traceback(exc_tb)
+<span class="ansi-green-fg">    225</span> <span style="font-weight:bold;color:rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    226</span>     <span style="color:rgb(0,135,0)">self</span>._exc_info = <span style="font-weight:bold;color:rgb(0,135,0)">None</span>  <span style="font-style:italic;color:rgb(95,135,135)"># remove potential circular references</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/pool/base.py:897</span>, in <span class="ansi-cyan-fg">_ConnectionRecord.__connect</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    895</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">    896</span>     <span style="color:rgb(0,135,0)">self</span>.starttime = time.time()
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">897</span>     <span style="color:rgb(0,135,0)">self</span>.dbapi_connection = connection = <span class="ansi-yellow-bg">pool</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_invoke_creator</span><span class="ansi-yellow-bg">(</span><span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    898</span>     pool.logger.debug(<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Created new connection </span><span style="font-weight:bold;color:rgb(175,95,135)">%r</span><span class="ansi-yellow-fg">"</span>, connection)
+<span class="ansi-green-fg">    899</span>     <span style="color:rgb(0,135,0)">self</span>.fresh = <span style="font-weight:bold;color:rgb(0,135,0)">True</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/create.py:646</span>, in <span class="ansi-cyan-fg">create_engine.&lt;locals&gt;.connect</span><span class="ansi-blue-fg">(connection_record)</span>
+<span class="ansi-green-fg">    643</span>         <span style="font-weight:bold;color:rgb(0,135,0)">if</span> connection <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    644</span>             <span style="font-weight:bold;color:rgb(0,135,0)">return</span> connection
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">646</span> <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">dialect</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">connect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">cargs</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">cparams</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py:625</span>, in <span class="ansi-cyan-fg">DefaultDialect.connect</span><span class="ansi-blue-fg">(self, *cargs, **cparams)</span>
+<span class="ansi-green-fg">    623</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">connect</span>(<span style="color:rgb(0,135,0)">self</span>, *cargs: Any, **cparams: Any) -&gt; DBAPIConnection:
+<span class="ansi-green-fg">    624</span>     <span style="font-style:italic;color:rgb(95,135,135)"># inherits the docstring from interfaces.Dialect.connect</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">625</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">loaded_dbapi</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">connect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">cargs</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">cparams</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pyhive/hive.py:143</span>, in <span class="ansi-cyan-fg">connect</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-fg">    137</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">connect</span>(*args, **kwargs):
+<span class="ansi-green-fg">    138</span> <span style="color:rgb(188,188,188)">    </span><span style="font-style:italic" class="ansi-yellow-fg">"""Constructor for creating a connection to the database. See class :py:class:`Connection` for</span>
+<span class="ansi-green-fg">    139</span> <span style="font-style:italic" class="ansi-yellow-fg">    arguments.</span>
+<span class="ansi-green-fg">    140</span> 
+<span class="ansi-green-fg">    141</span> <span style="font-style:italic" class="ansi-yellow-fg">    :returns: a :py:class:`Connection` object.</span>
+<span class="ansi-green-fg">    142</span> <span style="font-style:italic" class="ansi-yellow-fg">    """</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">143</span>     <span style="font-weight:bold;color:rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">Connection</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/pyhive/hive.py:269</span>, in <span class="ansi-cyan-fg">Connection.__init__</span><span class="ansi-blue-fg">(self, host, port, scheme, username, database, auth, configuration, kerberos_service_name, password, check_hostname, ssl_cert, thrift_transport)</span>
+<span class="ansi-green-fg">    266</span> protocol_version = ttypes.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V6
+<span class="ansi-green-fg">    268</span> <span style="font-weight:bold;color:rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">269</span>     <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_transport</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">open</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    270</span>     open_session_req = ttypes.TOpenSessionReq(
+<span class="ansi-green-fg">    271</span>         client_protocol=protocol_version,
+<span class="ansi-green-fg">    272</span>         configuration=configuration,
+<span class="ansi-green-fg">    273</span>         username=username,
+<span class="ansi-green-fg">    274</span>     )
+<span class="ansi-green-fg">    275</span>     response = <span style="color:rgb(0,135,0)">self</span>._client.OpenSession(open_session_req)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/thrift_sasl/__init__.py:74</span>, in <span class="ansi-cyan-fg">TSaslClientTransport.open</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">     72</span> <span style="font-weight:bold;color:rgb(0,135,0)">def</span><span style="color:rgb(188,188,188)"> </span><span class="ansi-blue-fg">open</span>(<span style="color:rgb(0,135,0)">self</span>):
+<span class="ansi-green-fg">     73</span>   <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="color:rgb(0,135,0)">self</span>.isOpen():
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">74</span>     <span style="color:rgb(0,135,0)" class="ansi-yellow-bg">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_trans</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">open</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">     76</span>   <span style="font-weight:bold;color:rgb(0,135,0)">if</span> <span style="color:rgb(0,135,0)">self</span>.sasl <span style="font-weight:bold;color:rgb(175,0,255)">is</span> <span style="font-weight:bold;color:rgb(175,0,255)">not</span> <span style="font-weight:bold;color:rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">     77</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> TTransportException(
+<span class="ansi-green-fg">     78</span>       <span style="color:rgb(0,135,0)">type</span>=TTransportException.NOT_OPEN,
+<span class="ansi-green-fg">     79</span>       message=<span class="ansi-yellow-fg">"</span><span class="ansi-yellow-fg">Already open!</span><span class="ansi-yellow-fg">"</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/usr/local/lib/python3.11/site-packages/thrift/transport/TSocket.py:127</span>, in <span class="ansi-cyan-fg">TSocket.open</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    125</span>     msg = <span class="ansi-yellow-fg">'</span><span class="ansi-yellow-fg">failed to resolve sockaddr for </span><span class="ansi-yellow-fg">'</span> + <span style="color:rgb(0,135,0)">str</span>(<span style="color:rgb(0,135,0)">self</span>._address)
+<span class="ansi-green-fg">    126</span>     logger.exception(msg)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">127</span>     <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> TTransportException(<span style="color:rgb(0,135,0)">type</span>=TTransportException.NOT_OPEN, message=msg, inner=gai)
+<span class="ansi-green-fg">    128</span> <span style="font-weight:bold;color:rgb(0,135,0)">for</span> family, socktype, _, _, sockaddr <span style="font-weight:bold;color:rgb(175,0,255)">in</span> addrs:
+<span class="ansi-green-fg">    129</span>     handle = <span style="color:rgb(0,135,0)">self</span>._do_open(family, socktype)
+
+<span class="ansi-red-fg">TTransportException</span>: failed to resolve sockaddr for dbt-spark3-thrift:10000</pre>
 </div>
 </div>
 </div>
 </section>
-<section id="verify-dbt-setup" class="level2" data-number="2.6">
-<h2 data-number="2.6" class="anchored" data-anchor-id="verify-dbt-setup"><span class="header-section-number">2.6</span> Verify DBT setup</h2>
-<section id="profiles.yml" class="level3" data-number="2.6.1">
-<h3 data-number="2.6.1" class="anchored" data-anchor-id="profiles.yml"><span class="header-section-number">2.6.1</span> profiles.yml</h3>
-<div class="sourceCode" id="cb13"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">formal_verification_prj_name</span><span class="kw">:</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">outputs</span><span class="kw">:</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">spark</span><span class="kw">:</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">type</span><span class="kw">:</span><span class="at"> spark</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">method</span><span class="kw">:</span><span class="at"> thrift</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">host</span><span class="kw">:</span><span class="at"> dbt-spark3-thrift</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">schema</span><span class="kw">:</span><span class="at"> default</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">connect_timeout</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">authentication</span><span class="kw">:</span><span class="at"> NONE</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">target</span><span class="kw">:</span><span class="at"> spark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div id="70bfe66e" class="cell" data-execution_count="7">
+<section id="dbt" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="dbt"><span class="header-section-number">3.2</span> DBT</h2>
+<div id="fdf3c236" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">~/</span>.dbt<span class="op">/</span>profiles.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt <span class="op">--</span>version</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>send_anonymous_usage_stats: false
-
-dbt_spark_demo_prj:
-  outputs:
-    spark:
-      type: spark
-      method: thrift
-      host: dbt-spark3-thrift
-      port: 10000
-      schema: default
-      connect_timeout: 30
-      authentication: NONE
-  target: spark</code></pre>
-</div>
 </div>
 </section>
-<section id="dbt_project.yml" class="level3" data-number="2.6.2">
-<h3 data-number="2.6.2" class="anchored" data-anchor-id="dbt_project.yml"><span class="header-section-number">2.6.2</span> dbt_project.yml</h3>
-<div class="sourceCode" id="cb16"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'formal_verification_prj_name'</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">'1.0.0'</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This setting configures which "profile" dbt uses for this project.</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">profile</span><span class="kw">:</span><span class="at"> </span><span class="st">'formal_verification_prj_name'</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># These configurations specify where dbt should look for different types of files.</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># The `model-paths` config, for example, states that models in this project can be</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># found in the "models/" directory. You probably won't need to change these!</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">model-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"models"</span><span class="kw">]</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">analysis-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"analyses"</span><span class="kw">]</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">test-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"tests"</span><span class="kw">]</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">seed-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"seeds"</span><span class="kw">]</span></span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="fu">macro-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"macros"</span><span class="kw">]</span></span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="fu">snapshot-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"snapshots"</span><span class="kw">]</span></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="fu">clean-targets</span><span class="kw">:</span><span class="co">         # directories to be removed by `dbt clean`</span></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">"target"</span></span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">"dbt_packages"</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="fu">models</span><span class="kw">:</span></span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">formal_verification_prj_name</span><span class="kw">:</span></span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="co">    # +write_json: false</span></span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">+materialized</span><span class="kw">:</span><span class="at"> incremental</span></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">+file_format</span><span class="kw">:</span><span class="at"> parquet    </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div id="089c0b95" class="cell" data-execution_count="8">
+<section id="verify-dbt-setup" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="verify-dbt-setup"><span class="header-section-number">3.3</span> Verify DBT setup</h2>
+<section id="profiles.yml" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="profiles.yml"><span class="header-section-number">3.3.1</span> profiles.yml</h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">formal_verification_prj_name</span><span class="kw">:</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">outputs</span><span class="kw">:</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">spark</span><span class="kw">:</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">type</span><span class="kw">:</span><span class="at"> spark</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">method</span><span class="kw">:</span><span class="at"> thrift</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">host</span><span class="kw">:</span><span class="at"> dbt-spark3-thrift</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">schema</span><span class="kw">:</span><span class="at"> default</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">connect_timeout</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">authentication</span><span class="kw">:</span><span class="at"> NONE</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">target</span><span class="kw">:</span><span class="at"> spark</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="70bfe66e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj<span class="op">/</span>dbt_project.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">~/</span>.dbt<span class="op">/</span>profiles.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-# Name your project! Project names should contain only lowercase characters
-# and underscores. A good package name should reflect your organization's
-# name or the intended use of these models
-name: 'dbt_spark_demo_prj'
-version: '1.0.0'
-
-# This setting configures which "profile" dbt uses for this project.
-profile: 'dbt_spark_demo_prj'
-
-# These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
-model-paths: ["models"]
-analysis-paths: ["analyses"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
-macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
-
-clean-targets:         # directories to be removed by `dbt clean`
-  - "target"
-  - "dbt_packages"
-
-
-# Configuring models
-# Full documentation: https://docs.getdbt.com/docs/configuring-models
-
-# In this example config, we tell dbt to build all models in the example/
-# directory as views. These settings can be overridden in the individual model
-# files using the `{ config(...) }` macro.
-models:
-  dbt_spark_demo_prj:
-    +materialized: incremental
-    +file_format: parquet
-  # example:
-  #   +enabled: false
-    </code></pre>
-</div>
 </div>
 </section>
-<section id="dbt-debug" class="level3" data-number="2.6.3">
-<h3 data-number="2.6.3" class="anchored" data-anchor-id="dbt-debug"><span class="header-section-number">2.6.3</span> dbt debug</h3>
-<div id="463ce0e5" class="cell" data-execution_count="9">
+<section id="dbt_project.yml" class="level3" data-number="3.3.2">
+<h3 data-number="3.3.2" class="anchored" data-anchor-id="dbt_project.yml"><span class="header-section-number">3.3.2</span> dbt_project.yml</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> </span><span class="st">'formal_verification_prj_name'</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">'1.0.0'</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This setting configures which "profile" dbt uses for this project.</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">profile</span><span class="kw">:</span><span class="at"> </span><span class="st">'formal_verification_prj_name'</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># These configurations specify where dbt should look for different types of files.</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># The `model-paths` config, for example, states that models in this project can be</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co"># found in the "models/" directory. You probably won't need to change these!</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="fu">model-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"models"</span><span class="kw">]</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="fu">analysis-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"analyses"</span><span class="kw">]</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="fu">test-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"tests"</span><span class="kw">]</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="fu">seed-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"seeds"</span><span class="kw">]</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="fu">macro-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"macros"</span><span class="kw">]</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="fu">snapshot-paths</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"snapshots"</span><span class="kw">]</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="fu">clean-targets</span><span class="kw">:</span><span class="co">         # directories to be removed by `dbt clean`</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">"target"</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="st">"dbt_packages"</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="fu">models</span><span class="kw">:</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">formal_verification_prj_name</span><span class="kw">:</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="co">    # +write_json: false</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">+materialized</span><span class="kw">:</span><span class="at"> incremental</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">+file_format</span><span class="kw">:</span><span class="at"> parquet    </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="089c0b95" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj<span class="op">/</span>dbt_project.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="dbt-debug" class="level3" data-number="3.3.3">
+<h3 data-number="3.3.3" class="anchored" data-anchor-id="dbt-debug"><span class="header-section-number">3.3.3</span> dbt debug</h3>
+<div id="463ce0e5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt debug <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj</span>
@@ -621,69 +747,11 @@ models:
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#to print detailed messages for debugging </span></span>
 <span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co">#!dbt debug --debug --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>15:09:26  Running with dbt=1.10.2
-
-15:09:26  dbt version: 1.10.2
-
-15:09:26  python version: 3.11.2
-
-15:09:26  python path: /usr/local/bin/python3
-
-15:09:26  os info: Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.31
-
-15:09:26  Using profiles dir at /usr/app/demo
-
-15:09:26  Using profiles.yml file at /usr/app/demo/profiles.yml
-
-15:09:26  Using dbt_project.yml file at /usr/app/dbt/dbt_spark_demo_prj/dbt_project.yml
-
-15:09:26  adapter type: spark
-
-15:09:26  adapter version: 1.9.2
-
-15:09:26  Configuration:
-
-15:09:26    profiles.yml file [<span class="ansi-green-fg">OK found and valid</span>]
-
-15:09:26    dbt_project.yml file [<span class="ansi-green-fg">OK found and valid</span>]
-
-15:09:26  Required dependencies:
-
-15:09:26   - git [<span class="ansi-green-fg">OK found</span>]
-
-
-
-15:09:26  Connection:
-
-15:09:26    host: dbt-spark3-thrift
-
-15:09:26    port: 10000
-
-15:09:26    cluster: None
-
-15:09:26    endpoint: None
-
-15:09:26    schema: default
-
-15:09:26    organization: 0
-
-15:09:26  Registered adapter: spark=1.9.2
-
-15:09:26    Connection test: [<span class="ansi-green-fg">OK connection ok</span>]
-
-
-
-15:09:26  <span class="ansi-green-fg">All checks passed!</span>
-</pre>
-</div>
-</div>
 </div>
 </section>
 </section>
-<section id="dbt-command-comparisons" class="level2" data-number="2.7">
-<h2 data-number="2.7" class="anchored" data-anchor-id="dbt-command-comparisons"><span class="header-section-number">2.7</span> dbt command comparisons</h2>
+<section id="dbt-command-comparisons" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="dbt-command-comparisons"><span class="header-section-number">3.4</span> dbt command comparisons</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
@@ -728,510 +796,299 @@ models:
 </table>
 </section>
 </section>
-<section id="prepare-sql" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Prepare SQL</h1>
-<section id="read-dbt-input-csv" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="read-dbt-input-csv"><span class="header-section-number">3.1</span> Read dbt input csv</h2>
+<section id="prepare-sql" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Prepare SQL</h1>
+<section id="read-dbt-input-csv" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="read-dbt-input-csv"><span class="header-section-number">4.1</span> Read dbt input csv</h2>
 <ul>
 <li>read seeds/transactions.csv,</li>
 <li>dbt generate raw__transaction.csv</li>
 <li>dbt create table default.raw_transaction at the database</li>
 </ul>
-<section id="verify-database-before-the-operation" class="level3" data-number="3.1.1">
-<h3 data-number="3.1.1" class="anchored" data-anchor-id="verify-database-before-the-operation"><span class="header-section-number">3.1.1</span> Verify database before the operation</h3>
-<div id="6c4e3091" class="cell" data-execution_count="10">
+<section id="verify-database-before-the-operation" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="verify-database-before-the-operation"><span class="header-section-number">4.1.1</span> Verify database before the operation</h3>
+<div id="6c4e3091" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.raw__transactions"}'</span>  </span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>15:09:31  Running with dbt=1.10.2
-
-15:09:31  Registered adapter: spark=1.9.2
-
-15:09:32  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
-
-15:09:37  Running with dbt=1.10.2
-
-15:09:37  Registered adapter: spark=1.9.2
-
-15:09:38  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
-</pre>
 </div>
-</div>
-</div>
-<div id="ff9ca4df" class="cell" data-execution_count="11">
+<div id="ff9ca4df" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"Database table before the operation"</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt seed <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"</span><span class="ch">\n</span><span class="st">Database table after the operation"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Database table before the operation</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">namespace</th>
-<th data-quarto-table-cell-role="th">tableName</th>
-<th data-quarto-table-cell-role="th">isTemporary</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
-
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>15:09:43  Running with dbt=1.10.2
-
-15:09:44  Registered adapter: spark=1.9.2
-
-15:09:44  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
-
-15:09:44  
-
-15:09:44  Concurrency: 1 threads (target='spark')
-
-15:09:44  
-
-15:09:44  1 of 1 START seed file default.raw__transactions ............................... [RUN]
-
-15:09:45  1 of 1 OK loaded seed file default.raw__transactions ........................... [<span class="ansi-green-fg">INSERT 6</span> in 0.70s]
-
-15:09:45  
-
-15:09:45  Finished running 1 seed in 0 hours 0 minutes and 0.98 seconds (0.98s).
-
-15:09:45  
-
-15:09:45  <span class="ansi-green-fg">Completed successfully</span>
-
-15:09:45  
-
-15:09:45  Done. PASS=1 WARN=0 ERROR=0 SKIP=0 NO-OP=0 TOTAL=1
-
-
-
-Database table after the operation
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">namespace</th>
-<th data-quarto-table-cell-role="th">tableName</th>
-<th data-quarto-table-cell-role="th">isTemporary</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
-<td>default</td>
-<td>raw__transactions</td>
-<td>False</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
 </div>
 </section>
 </section>
-<section id="dbt-compile" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="dbt-compile"><span class="header-section-number">3.2</span> dbt compile</h2>
-<section id="removed-targetcompiled" class="level4" data-number="3.2.0.1">
-<h4 data-number="3.2.0.1" class="anchored" data-anchor-id="removed-targetcompiled"><span class="header-section-number">3.2.0.1</span> removed target/compiled/</h4>
-<div id="be2451a9" class="cell" data-execution_count="12">
+<section id="dbt-compile" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="dbt-compile"><span class="header-section-number">4.2</span> dbt compile</h2>
+<section id="removed-targetcompiled" class="level4" data-number="4.2.0.1">
+<h4 data-number="4.2.0.1" class="anchored" data-anchor-id="removed-targetcompiled"><span class="header-section-number">4.2.0.1</span> removed target/compiled/</h4>
+<div id="be2451a9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>rf dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span>compiled<span class="op">/</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span><span class="bu">compile</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>rf dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span>compiled<span class="op">/</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span><span class="bu">compile</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>ls: cannot access 'dbt_spark_demo_prj/target/compile': No such file or directory</code></pre>
 </div>
-</div>
-<div id="e6d17db8" class="cell" data-execution_count="13">
+<div id="e6d17db8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls $dbt_project_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls $dbt_project_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>dbt_project.yml  logs  macros  models  seeds  target  tests</code></pre>
 </div>
-</div>
-<div id="7789867d" class="cell" data-execution_count="14">
+<div id="7789867d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt <span class="bu">compile</span> <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt <span class="bu">compile</span> <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>15:09:52  Running with dbt=1.10.2
-
-15:09:52  Registered adapter: spark=1.9.2
-
-15:09:53  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
-
-15:09:53  
-
-15:09:53  Concurrency: 1 threads (target='spark')
-
-15:09:53  
-</pre>
 </div>
-</div>
-</div>
-<div id="2075b987" class="cell" data-execution_count="15">
+<div id="2075b987" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span>compiled<span class="op">/</span>dbt_spark_demo_prj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>models  tests</code></pre>
-</div>
-</div>
-</section>
-</section>
-<section id="build-your-models-dbt-run" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="build-your-models-dbt-run"><span class="header-section-number">3.3</span> Build your models (dbt run)</h2>
-</section>
-<section id="delete-database-table-prior-dbt-run-that-will-create-the-table" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="delete-database-table-prior-dbt-run-that-will-create-the-table"><span class="header-section-number">3.4</span> Delete database table prior dbt run that will create the table</h2>
-<div id="49dad449" class="cell" data-execution_count="16">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"before"</span>)</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"</span><span class="ch">\n</span><span class="st">after"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>before</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">namespace</th>
-<th data-quarto-table-cell-role="th">tableName</th>
-<th data-quarto-table-cell-role="th">isTemporary</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
-<td>default</td>
-<td>raw__transactions</td>
-<td>False</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>15:09:59  Running with dbt=1.10.2
-
-15:09:59  Registered adapter: spark=1.9.2
-
-15:10:00  Found 1 model, 1 test, 1 seed, 476 macros, 3 unit tests
-
-
-
-after
-</pre>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">namespace</th>
-<th data-quarto-table-cell-role="th">tableName</th>
-<th data-quarto-table-cell-role="th">isTemporary</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">0</td>
-<td>default</td>
-<td>raw__transactions</td>
-<td>False</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-<div id="bdf648b1" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>r $dbt_project_dir<span class="op">/</span>target<span class="op">/</span>run</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span> </span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"before"</span>)</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">After"</span>)</span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tree $dbt_project_dir<span class="op">/</span>target<span class="op">/</span>run</span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"after"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>15:10:05  Running with dbt=1.10.2
-
-15:10:06  Registered adapter: spark=1.9.2
-</pre>
-</div>
-</div>
-</div>
-</section>
-<section id="test-model-using-dbt" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="test-model-using-dbt"><span class="header-section-number">3.5</span> test model using dbt</h2>
-<section id="test-name-and-its-test-vectors" class="level4" data-number="3.5.0.1">
-<h4 data-number="3.5.0.1" class="anchored" data-anchor-id="test-name-and-its-test-vectors"><span class="header-section-number">3.5.0.1</span> test name and its test vectors</h4>
-<div id="06dfaae6" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat dbt_spark_demo_prj<span class="op">/</span>tests<span class="op">/</span>unit<span class="op">/</span>test_transactions.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls <span class="op">/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj<span class="op">/</span>target<span class="op">/</span>compiled<span class="op">/</span>dbt_spark_demo_prj</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="run-test" class="level4" data-number="3.5.0.2">
-<h4 data-number="3.5.0.2" class="anchored" data-anchor-id="run-test"><span class="header-section-number">3.5.0.2</span> run test</h4>
-<div id="c0c0834d" class="cell">
+</section>
+<section id="build-your-models-dbt-run" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="build-your-models-dbt-run"><span class="header-section-number">4.3</span> Build your models (dbt run)</h2>
+</section>
+<section id="delete-database-table-prior-dbt-run-that-will-create-the-table" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="delete-database-table-prior-dbt-run-that-will-create-the-table"><span class="header-section-number">4.4</span> Delete database table prior dbt run that will create the table</h2>
+<div id="49dad449" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>export DBT_PROJECT_DIR<span class="op">=/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>dbt test <span class="op">--</span>log<span class="op">-</span>level info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"before"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"</span><span class="ch">\n</span><span class="st">after"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="d37f7eab" class="cell">
+<div id="bdf648b1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export TZ<span class="op">=</span><span class="st">'Asia/Singapore'</span><span class="op">;</span> date</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>rm <span class="op">-</span>r $dbt_project_dir<span class="op">/</span>target<span class="op">/</span>run</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run<span class="op">-</span>operation drop_table <span class="op">--</span>args <span class="st">'{"table_name": "default.transactions"}'</span> </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"before"</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt run <span class="op">--</span>log<span class="op">-</span>level info <span class="op">--</span>project<span class="op">-</span><span class="bu">dir</span> $dbt_project_dir</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">After"</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>tree $dbt_project_dir<span class="op">/</span>target<span class="op">/</span>run</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>check_table(message_to_be_printed<span class="op">=</span><span class="st">"after"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="717e70b4" class="cell">
+</section>
+<section id="test-model-using-dbt" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="test-model-using-dbt"><span class="header-section-number">4.5</span> test model using dbt</h2>
+<section id="test-name-and-its-test-vectors" class="level4" data-number="4.5.0.1">
+<h4 data-number="4.5.0.1" class="anchored" data-anchor-id="test-name-and-its-test-vectors"><span class="header-section-number">4.5.0.1</span> test name and its test vectors</h4>
+<div id="06dfaae6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>chmod <span class="op">-</span>R a<span class="op">+</span>rw <span class="op">/</span>usr<span class="op">/</span>app</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat dbt_spark_demo_prj<span class="op">/</span>tests<span class="op">/</span>unit<span class="op">/</span>test_transactions.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="9b840cc5" class="cell">
+</section>
+<section id="run-test" class="level4" data-number="4.5.0.2">
+<h4 data-number="4.5.0.2" class="anchored" data-anchor-id="run-test"><span class="header-section-number">4.5.0.2</span> run test</h4>
+<div id="c0c0834d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="va">False</span>, <span class="st">"Stop execution here!"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>export DBT_PROJECT_DIR<span class="op">=/</span>usr<span class="op">/</span>app<span class="op">/</span>dbt<span class="op">/</span>dbt_spark_demo_prj</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>dbt test <span class="op">--</span>log<span class="op">-</span>level info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="2321bb74" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>chmod <span class="op">-</span>R a<span class="op">+</span>rw <span class="op">/</span>usr<span class="op">/</span>app</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="c28d80c5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>filepath<span class="op">=</span><span class="st">"/usr/app/demo/results/test_end.txt"</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>date<span class="op">;</span> echo end test at <span class="op">&gt;</span> $filepath </span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export TZ<span class="op">=</span><span class="st">'Asia/Singapore'</span><span class="op">;</span> date <span class="op">&gt;&gt;</span> $filepath<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="9b840cc5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># assert False, "Stop execution here!"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
 </section>
 </section>
-<section id="apendix" class="level1" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> Apendix</h1>
-<section id="check-the-model-built" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="check-the-model-built"><span class="header-section-number">4.1</span> check the model built</h2>
-<section id="check-the-model-built-using-pyspark-in-progress" class="level3" data-number="4.1.1">
-<h3 data-number="4.1.1" class="anchored" data-anchor-id="check-the-model-built-using-pyspark-in-progress"><span class="header-section-number">4.1.1</span> Check the model built using Pyspark (In progress)</h3>
-<div id="32863689" class="cell">
+<section id="apendix" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Apendix</h1>
+<section id="check-the-model-built" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="check-the-model-built"><span class="header-section-number">5.1</span> check the model built</h2>
+<section id="check-the-model-built-using-pyspark-in-progress" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="check-the-model-built-using-pyspark-in-progress"><span class="header-section-number">5.1.1</span> Check the model built using Pyspark (In progress)</h3>
+<div id="32863689" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install pyspark<span class="op">==</span><span class="fl">3.3.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install pyspark==3.3.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="87f91e66" class="cell">
+<div id="87f91e66" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># For Debian/Ubuntu-based containers:</span></span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>apt<span class="op">-</span>get update <span class="op">&amp;&amp;</span> apt<span class="op">-</span>get install <span class="op">-</span>y openjdk<span class="op">-</span><span class="dv">11</span><span class="op">-</span>jdk</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="co"># For Alpine-based containers:</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>apk add openjdk11</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %%bash</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="co"># # For Debian/Ubuntu-based containers:</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># apt-get update &amp;&amp; apt-get install -y openjdk-11-jdk</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="co"># # For Alpine-based containers:</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="co"># apk add openjdk11</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="67c39001" class="cell">
+<div id="67c39001" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls <span class="op">/</span>usr<span class="op">/</span>lib<span class="op">/</span>jvm<span class="op">/</span>java<span class="op">-</span><span class="dv">11</span><span class="op">-</span>openjdk<span class="op">-</span>amd64</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># !ls /usr/lib/jvm/java-11-openjdk-amd64</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="ff2863d3" class="cell">
+<div id="ff2863d3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># !. /usr/spark/bin/load-spark-env.sh</span></span>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # !. /usr/spark/bin/load-spark-env.sh</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co"># # Typically in Debian/Ubuntu:</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co"># !export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="co"># # Or set it explicitly:</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a><span class="co"># !export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a><span class="co"># from pyspark.sql import SparkSession</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="co"># spark = SparkSession.builder \</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     .appName("dbt_clean") \</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("spark.hadoop.hive.metastore.schema.verification", "true") \</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("spark.sql.catalogImplementation", "hive") \</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a><span class="co">#     .enableHiveSupport() \</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     .getOrCreate()</span></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a><span class="co"># # spark = SparkSession.builder \</span></span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a><span class="co"># #     .config("hive.metastore.uris", "thrift://dbt-hive-metastore:10000") \</span></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a><span class="co"># #     .config("spark.sql.catalogImplementation", "hive") \</span></span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a><span class="co"># #     .enableHiveSupport() \</span></span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a><span class="co"># #     .getOrCreate()</span></span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("USE default")  # Or your specific database</span></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("SHOW DATABASES").show()</span></span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a><span class="co"># # spark.sql("select * from transactions").show()</span></span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a><span class="co"># # # df.toPandas()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="b054f4f4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("SHOW TABLES IN default").show(truncate=False)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="d2477376" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Query metastore system tables</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("""</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   SELECT TBL_NAME, TBL_TYPE </span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   FROM default.TBLS </span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   JOIN default.DBS ON TBLS.DB_ID = DBS.DB_ID </span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   WHERE DBS.NAME = 'default'</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="co"># """).show(truncate=False)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="04c7f91a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.conf.get("hive.metastore.uris")  # Should return your URI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="30ef3800" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.conf.get("spark.sql.catalogImplementation")  # Should return "hive"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="91926ec3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from pyspark.sql import SparkSession</span></span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Typically in Debian/Ubuntu:</span></span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export JAVA_HOME<span class="op">=</span>$(dirname $(dirname $(readlink <span class="op">-</span>f $(which java))))</span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Or set it explicitly:</span></span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>export JAVA_HOME<span class="op">=/</span>usr<span class="op">/</span>lib<span class="op">/</span>jvm<span class="op">/</span>java<span class="op">-</span><span class="dv">11</span><span class="op">-</span>openjdk<span class="op">-</span>amd64</span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyspark.sql <span class="im">import</span> SparkSession</span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>spark <span class="op">=</span> SparkSession.builder <span class="op">\</span></span>
-<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>    .appName(<span class="st">"dbt_clean"</span>) <span class="op">\</span></span>
-<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"spark.hadoop.hive.metastore.schema.verification"</span>, <span class="st">"true"</span>) <span class="op">\</span></span>
-<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"spark.sql.catalogImplementation"</span>, <span class="st">"hive"</span>) <span class="op">\</span></span>
-<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>    .enableHiveSupport() <span class="op">\</span></span>
-<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>    .getOrCreate()</span>
-<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a><span class="co"># spark = SparkSession.builder \</span></span>
-<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("hive.metastore.uris", "thrift://dbt-hive-metastore:10000") \</span></span>
-<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("spark.sql.catalogImplementation", "hive") \</span></span>
-<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a><span class="co">#     .enableHiveSupport() \</span></span>
-<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a><span class="co">#     .getOrCreate()</span></span>
-<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"USE default"</span>)  <span class="co"># Or your specific database</span></span>
-<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"SHOW DATABASES"</span>).show()</span>
-<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("select * from transactions").show()</span></span>
-<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a><span class="co"># # df.toPandas()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.stop()</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="co"># spark = SparkSession.builder \</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     .appName("DBTIntegration") \</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("hive.metastore.uris", "thrift://dbt-hive-metastore:9083") \</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("spark.sql.catalogImplementation", "hive") \</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("javax.jdo.option.ConnectionUserName", "dbt") \</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     .config("javax.jdo.option.ConnectionPassword", "dbt") \</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     .enableHiveSupport() \</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     .getOrCreate()</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="co"># spark.sql("SHOW TABLES IN default")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="b054f4f4" class="cell">
+<div id="a34760ee" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"SHOW TABLES IN default"</span>).show(truncate<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="d2477376" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Query metastore system tables</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"""</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT TBL_NAME, TBL_TYPE </span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM default.TBLS </span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="st">  JOIN default.DBS ON TBLS.DB_ID = DBS.DB_ID </span></span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="st">  WHERE DBS.NAME = 'default'</span></span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>).show(truncate<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="04c7f91a" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>spark.conf.get(<span class="st">"hive.metastore.uris"</span>)  <span class="co"># Should return your URI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="30ef3800" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>spark.conf.get(<span class="st">"spark.sql.catalogImplementation"</span>)  <span class="co"># Should return "hive"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="91926ec3" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyspark.sql <span class="im">import</span> SparkSession</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>spark.stop()</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>spark <span class="op">=</span> SparkSession.builder <span class="op">\</span></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    .appName(<span class="st">"DBTIntegration"</span>) <span class="op">\</span></span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"hive.metastore.uris"</span>, <span class="st">"thrift://dbt-hive-metastore:9083"</span>) <span class="op">\</span></span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"spark.sql.catalogImplementation"</span>, <span class="st">"hive"</span>) <span class="op">\</span></span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"javax.jdo.option.ConnectionUserName"</span>, <span class="st">"dbt"</span>) <span class="op">\</span></span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    .config(<span class="st">"javax.jdo.option.ConnectionPassword"</span>, <span class="st">"dbt"</span>) <span class="op">\</span></span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>    .enableHiveSupport() <span class="op">\</span></span>
-<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    .getOrCreate()</span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>spark.sql(<span class="st">"SHOW TABLES IN default"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="92f49695" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install pyspark<span class="op">==</span><span class="fl">3.3.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="a34760ee" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from pyhive import hive</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="co"># conn = hive.connect(host=spark_thrift_service_name, port=10000)</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cursor = conn.cursor()</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a><span class="co"># cursor.execute("SELECT * FROM default.transactions LIMIT 1")</span></span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="co"># print(cursor.fetchall())</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># from pyhive import hive</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="co"># conn = hive.connect(host=spark_thrift_service_name, port=10000)</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cursor = conn.cursor()</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="co"># cursor.execute("SELECT * FROM default.transactions LIMIT 1")</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="co"># print(cursor.fetchall())</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="test-the-built-model-using-the-test-model" class="level3" data-number="4.1.2">
-<h3 data-number="4.1.2" class="anchored" data-anchor-id="test-the-built-model-using-the-test-model"><span class="header-section-number">4.1.2</span> Test the built model (using the test model)</h3>
-<div id="0d6db6bf" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">### dbt test</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="d95bbbdd" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt test <span class="op">--</span>log<span class="op">-</span>level info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="7cff9e94" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>cat <span class="op">/</span>home<span class="op">/</span>vin<span class="op">/</span><span class="dv">0</span><span class="er">1</span><span class="op">-</span>prj<span class="op">/</span>stripe<span class="op">/</span>sql<span class="op">-</span>formal<span class="op">-</span>verification<span class="op">/</span>formal_verification_prj_name<span class="op">/</span>tests<span class="op">/</span>unit<span class="op">/</span>test_transactions.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div id="60c204c0" class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %%bash</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="co"># cd /usr/app/dbt</span></span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt compile --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # dbt run-operation drop_table --args '{"table_name": "default.transactions"}'</span></span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt run-operation drop_view --args '{"view_name": "default.my_first_dbt_model"}' --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt run-operation drop_view --args '{"view_name": "default.my_second_dbt_model"}' --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
+<section id="test-the-built-model-using-the-test-model" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="test-the-built-model-using-the-test-model"><span class="header-section-number">5.1.2</span> Test the built model (using the test model)</h3>
 </section>
-</section>
-</section>
-<section id="todo" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Todo</h1>
-<section id="audit-compliance" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="audit-compliance"><span class="header-section-number">5.1</span> Audit compliance</h2>
-<section id="time-tracing-with-time-stamping" class="level3" data-number="5.1.1">
-<h3 data-number="5.1.1" class="anchored" data-anchor-id="time-tracing-with-time-stamping"><span class="header-section-number">5.1.1</span> time tracing with time-stamping</h3>
-<ol type="1">
-<li>Add timestamp for loaded data using dbt model</li>
-</ol>
-<pre class="jinja"><code>SELECT
+<section id="dbt-test" class="level3" data-number="5.1.3">
+<h3 data-number="5.1.3" class="anchored" data-anchor-id="dbt-test"><span class="header-section-number">5.1.3</span> dbt test</h3>
+<div id="d95bbbdd" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>dbt test <span class="op">--</span>log<span class="op">-</span>level info</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="7cff9e94" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># !cat /home/vin/01-prj/stripe/sql-formal-verification/formal_verification_prj_name/tests/unit/test_transactions.yml</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="60c204c0" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;papermill&quot;,&quot;value&quot;:{&quot;duration&quot;:null,&quot;end_time&quot;:null,&quot;exception&quot;:null,&quot;start_time&quot;:null,&quot;status&quot;:&quot;pending&quot;}}" data-tags="[]">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># %%bash</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co"># cd /usr/app/dbt</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt compile --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # dbt run-operation drop_table --args '{"table_name": "default.transactions"}'</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt run-operation drop_view --args '{"view_name": "default.my_first_dbt_model"}' --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="co"># dbt run-operation drop_view --args '{"view_name": "default.my_second_dbt_model"}' --profiles-dir /usr/app/dbt  --project-dir /usr/app/dbt/dbt_spark_demo_prj</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<!-- # Todo
+## Audit compliance 
+### time tracing with time-stamping
+1. Add timestamp for loaded data using dbt model
+```jinja
+SELECT
     *,
     '{{ run_started_at }}'::timestamp AS added_at
-FROM {{ ref('my_seed_table') }}</code></pre>
+FROM {{ ref('my_seed_table') }}
+```
+### File tracing with source and targets file path, tablename -->
 </section>
-<section id="file-tracing-with-source-and-targets-file-path-tablename" class="level3" data-number="5.1.2">
-<h3 data-number="5.1.2" class="anchored" data-anchor-id="file-tracing-with-source-and-targets-file-path-tablename"><span class="header-section-number">5.1.2</span> File tracing with source and targets file path, tablename</h3>
 </section>
 </section>
+<section id="end-of-notebook" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> End of notebook</h1>
 </section>
 
 </main>
