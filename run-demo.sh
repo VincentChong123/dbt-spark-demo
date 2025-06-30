@@ -1,7 +1,8 @@
 docker network create my_shared_network
 pwd
-cd dbt;             docker compose up -d 
-cd ../dbt-spark;    docker compose up -d 
+COMPOSE_UP=true
+cd dbt;             docker compose build; docker compose up -d
+cd ../dbt-spark;    docker compose build; docker compose up -d
 
 docker exec dbt-dbt-1 bash -c "cd /usr/app/demo/dbt_spark_demo_prj && . ./setup.sh"
 

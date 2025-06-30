@@ -1,4 +1,4 @@
-sqlalchemy
+SQLAlchemy
 pandas
 dotenv
 notebook
