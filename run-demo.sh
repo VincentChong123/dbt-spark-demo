@@ -6,16 +6,17 @@ COMPOSE_UP=true # This variable isn't used in the commands, assume it's for cont
 # --- Step 1: Build and start the dbt project ---
 echo "Building and starting dbt project..."
 # cd dbt && docker compose build --no-cache && docker compose up -d
-cd dbt && docker compose build && docker compose up -d
+pushd dbt && docker compose build && docker compose up -d
 if [ $? -ne 0 ]; then echo "Error starting dbt project"; exit 1; fi
-cd ..
+popd 
 
 # --- Step 2: Build and start the dbt-spark project ---
 echo "Building and starting dbt-spark project..."
 # cd dbt-spark && docker compose build --no-cache && docker compose up -d
-cd dbt-spark && docker compose build && docker compose up -d
+pushd dbt-spark && ls ./docker-compose.yml && docker compose build && docker compose up -d
 if [ $? -ne 0 ]; then echo "Error starting dbt-spark project"; exit 1; fi
 cd ..
+popd
 
 # --- Step 3: Wait for dbt-spark3-thrift to be ready ---
 echo "Waiting for dbt-spark3-thrift service to be ready..."
