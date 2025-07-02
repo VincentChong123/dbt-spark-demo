@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: transactions
+    description: "Transactions data model."
+    columns:
+      - name: amount
+        description: |
+          "Transaction amount with exactly two decimal places."
+          "TODO: enable checking for decimal_point"
+        tests:
+          - not_null:
+              config:
+                store_failures: true
+                # Optional severity level
+                severity: error         
+          # - decimal_point:  # your custom decimal places test
+            #     config:
+            #       store_failures: true
+            #       # Optional severity level  
+            #       severity: error  
+              #            Failure in test decimal_point_transactions_amount (models/transactions/schema.yml
+              # )
+              # 14:02:25    Compilation Error in test decimal_point_transactions_amount (models/transactio
+              # ns/schema.yml)
+              #   Field "path" of type Path in SparkRelation has invalid value {'database': Undefined
+              # , 'schema': 'dbt_test_failures', 'identifier': 'decimal_point_transactions_amount'}
+              # 14:02:25  
+              # 14:02:25    See test failures:
+              #   ---------------------------------------------------------------
+              # --------
+              #   select * from default_dbt_test__audit.decimal_point_transactions_amount
+              #   ---------------
+              # --------------------------------------------------------
