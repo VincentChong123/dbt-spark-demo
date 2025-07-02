@@ -9,7 +9,7 @@ services:
         dbt_third_party: ""  # set to e.g. dbt-trino if needed
     image: custom-dbt:latest
     # container_name: dbt-core
-    entrypoint: ["/bin/bash"]
+    entrypoint: ["/bin/bash", "-c", "rm -r ./dbt_spark_demo_prj/*; sleep infinity"]
     healthcheck:
       test: ["CMD", "dbt", "--version"]
       interval: 30s

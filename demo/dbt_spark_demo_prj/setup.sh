@@ -22,7 +22,7 @@ mkdir ~/.dbt
 cp -v /usr/app/demo/profiles.yml ~/.dbt/
 pushd $DBT_TOP_DIR
 echo pwd $(pwd)
-rm -r $DBT_PROJECT_NAME/{macros,models,tests,seeds}
+# rm -r $DBT_PROJECT_NAME/{macros,models,tests,seeds}
 popd
 cp -r --verbose ./{macros,models,tests,seeds,dbt_project.yml} $DBT_TOP_DIR/$DBT_PROJECT_NAME
 chmod a+rw -R $DBT_TOP_DIR/$DBT_PROJECT_NAME

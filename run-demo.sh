@@ -1,7 +1,7 @@
 #!/bin/bash
 docker network create --attachable my_shared_network
 
-COMPOSE_UP=true # This variable isn't used in the commands, assume it's for context
+COMPOSE_BAKE=true # This variable isn't used in the commands, assume it's for context
 
 # --- Step 1: Build and start the dbt project ---
 echo "Building and starting dbt project..."
@@ -18,13 +18,13 @@ if [ $? -ne 0 ]; then echo "Error starting dbt-spark project"; exit 1; fi
 cd ..
 popd
 
-# --- Step 3: Wait for dbt-spark3-thrift to be ready ---
-echo "Waiting for dbt-spark3-thrift service to be ready..."
-# Use docker compose wait (recommended if available, Docker Compose v2.20.0+)
-# Make sure your dbt-spark/docker-compose.yml has a healthcheck for spark3-thrift!
-cd dbt-spark && docker compose wait dbt-spark3-thrift
-if [ $? -ne 0 ]; then echo "dbt-spark3-thrift service failed health check"; exit 1; fi
-cd ..
+        # # --- Step 3: Wait for dbt-spark3-thrift to be ready ---
+        # echo "Waiting for dbt-spark3-thrift service to be ready..."
+        # # Use docker compose wait (recommended if available, Docker Compose v2.20.0+)
+        # # Make sure your dbt-spark/docker-compose.yml has a healthcheck for spark3-thrift!
+        # cd dbt-spark && docker compose wait dbt-spark3-thrift
+        # if [ $? -ne 0 ]; then echo "dbt-spark3-thrift service failed health check"; exit 1; fi
+        # cd ..
 
 # OR, a more manual wait with retry (if docker compose wait isn't an option or reliable enough)
 # MAX_RETRIES=20
@@ -42,9 +42,9 @@ cd ..
 
 
 # --- Clean up old data (execute after services are up if they depend on it) ---
-echo "Cleaning up data..."
-rm -r dbt/dbt_spark_demo_prj/* || true # Use '|| true' to prevent script from failing if dir doesn't exist
-rm demo/results/*.txt || true # Use '|| true' to prevent script from failing if file doesn't exist
+# echo "Cleaning up data..."
+# rm -r dbt/dbt_spark_demo_prj/* || true # Use '|| true' to prevent script from failing if dir doesn't exist
+# rm demo/results/*.txt || true # Use '|| true' to prevent script from failing if file doesn't exist
 
 # --- Verify running containers (optional) ---
 echo "Currently running Docker containers:"

@@ -9,7 +9,7 @@ WITH  __dbt__cte__raw__transactions as (
 
 -- Fixture for raw__transactions
 select cast(2 as bigint)
- as id, cast(100 as bigint)
+ as id, cast(100 as double)
  as amount, cast('SGD' as string)
  as currency, cast('ACTIVE' as string)
  as status
@@ -56,7 +56,7 @@ dbt_internal_unit_test_expected as (
     id, amount_usd, branch_marker, 'expected' as `actual_or_expected`
   from (
     select cast(2 as bigint)
- as id, cast(74 as decimal(23,2))
+ as id, cast(74 as double)
  as amount_usd, cast('SGD_BRANCH' as string)
  as branch_marker
   ) _dbt_internal_unit_test_expected

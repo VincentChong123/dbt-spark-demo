@@ -1,7 +1,7 @@
 name: Run Demo on Push
 
 on:
-  # push:
+  push:
   #   branches:
   #     - '**'   # Match all branches
   workflow_dispatch:

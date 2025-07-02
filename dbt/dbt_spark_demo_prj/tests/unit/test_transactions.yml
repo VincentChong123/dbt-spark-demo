@@ -30,3 +30,20 @@ unit_tests:
           - {id: 2, amount: 100, currency: 'SGD', status: 'INACTIVE'}
     expect: 
       rows: []
+
+  # - name: test_decimal_point
+  #   model: transactions
+  #   given:
+  #     - input: ref('raw__transactions')
+  #       rows:
+  #         - {id: 2, amount: 100, currency: 'SGD', status: 'INACTIVE'}
+  #         - {id: 3, amount: 123.45, currency: 'SGD', status: 'ACTIVE'}
+  #         - {id: 4, amount: 123.456, currency: 'SGD', status: 'ACTIVE'}          
+  #         - {id: 5, amount: 0, currency: 'SGD', status: 'ACTIVE'}
+  #         - {id: 6, amount: -0.1, currency: 'SGD', status: 'ACTIVE'}
+  #   expect:
+  #     rows:
+  #         - {id: 2, amount: 100, currency: 'SGD', status: 'INACTIVE'}
+  #         - {id: 4, amount: 123.456, currency: 'SGD', status: 'ACTIVE'} 
+  #         - {id: 5, amount: 0, currency: 'SGD', status: 'ACTIVE'}
+  #         - {id: 6, amount: -0.1, currency: 'SGD', status: 'ACTIVE'}

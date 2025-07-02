@@ -9,7 +9,7 @@ WITH  __dbt__cte__raw__transactions as (
 
 -- Fixture for raw__transactions
 select cast(2 as bigint)
- as id, cast(100 as bigint)
+ as id, cast(100 as double)
  as amount, cast('SGD' as string)
  as currency, cast('INACTIVE' as string)
  as status
