@@ -51,8 +51,8 @@ echo "Currently running Docker containers:"
 docker ps
 
 # --- Step 4: Execute the dbt command ---
-echo "Executing dbt command inside dbt-dbt-1 container..."
-docker exec dbt-dbt-1 bash -c "cd /usr/app/demo/dbt_spark_demo_prj && . ./setup.sh"
+echo "Executing dbt command inside dbt-core container..."
+docker exec dbt-core bash -c "cd /usr/app/demo/dbt_spark_demo_prj && . ./setup.sh"
 if [ $? -ne 0 ]; then echo "Error executing dbt command"; exit 1; fi
 
 echo "Workflow completed successfully!"
@@ -79,4 +79,4 @@ echo "Workflow completed successfully!"
 # echo -------- end docker exec
 
 # jupyter nbconvert --to notebook --execute /usr/app/demo/dbt-spark-demo.ipynb
-# docker exec -it dbt-dbt-1 bash -c "cd /usr/app/ && jupyter notebook --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.disable_check_xsrf=True --allow-root --ip=0.0.0.0 --port=8888 --no-browser"
+# docker exec -it dbt-core bash -c "cd /usr/app/ && jupyter notebook --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.disable_check_xsrf=True --allow-root --ip=0.0.0.0 --port=8888 --no-browser"

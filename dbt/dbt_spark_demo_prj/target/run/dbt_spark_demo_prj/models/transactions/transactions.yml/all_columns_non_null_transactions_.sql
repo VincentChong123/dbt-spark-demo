@@ -6,7 +6,7 @@
     from (
       
         select *
-        from default_dbt_test__audit.all_columns_non_null_in_seeds_transactions_
+        from default_dbt_test__audit.all_columns_non_null_transactions_
     
       
     ) dbt_internal_test

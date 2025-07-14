@@ -8,4 +8,4 @@ version: 2
 seeds:
   - name: raw__transactions
     tests:
-      - test_all_columns_non_null: {} # Apply our custom test
+      - all_columns_non_null: {} # Apply our custom test

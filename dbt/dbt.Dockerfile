@@ -16,6 +16,7 @@ RUN apt-get update \
     software-properties-common=0.96.20.2-2.1 \
     coreutils \ 
     tree \
+    curl \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

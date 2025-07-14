@@ -4,7 +4,7 @@ models:
   - name: transactions # This matches the `alias` from your config block in transactions.sql
     description: "This model processes raw transaction data, filters for active transactions, and standardizes amounts to USD while also assigning a branch marker based on the transaction currency."
     tests:
-      - test_all_columns_non_null: {}     
+      - all_columns_non_null: {}     
     columns:
       - name: id
         description: "The unique identifier for each transaction."
