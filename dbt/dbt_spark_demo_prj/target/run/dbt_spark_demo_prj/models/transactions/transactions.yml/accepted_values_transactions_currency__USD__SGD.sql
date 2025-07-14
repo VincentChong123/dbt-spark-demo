@@ -6,7 +6,7 @@
     from (
       
         select *
-        from default_dbt_test__audit.not_null_transactions_amount
+        from default_dbt_test__audit.accepted_values_transactions_currency__USD__SGD
     
       
     ) dbt_internal_test

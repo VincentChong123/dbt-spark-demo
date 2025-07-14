@@ -36,3 +36,5 @@ models:
   # example:
   #   +enabled: false
     
+tests:
+  +store_failures: true # Apply to all tests in the project

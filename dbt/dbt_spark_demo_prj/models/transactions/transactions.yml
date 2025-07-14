@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: transactions # This matches the `alias` from your config block in transactions.sql
+    description: "This model processes raw transaction data, filters for active transactions, and standardizes amounts to USD while also assigning a branch marker based on the transaction currency."
+    tests:
+      - test_all_columns_non_null: {}     
+    columns:
+      - name: id
+        description: "The unique identifier for each transaction."
+        tests:
+          - unique
+          - not_null
+      - name: amount
+        description: "The original transaction amount in its respective currency."
+        # tests:
+          # - not_null
+          # - dbt_expectations.expect_column_values_to_be_of_type:
+          #     column_type: numeric
+          # - dbt_expectations.expect_column_values_to_be_positive # Assuming amounts should always be positive
+      - name: currency
+        description: "The original currency of the transaction (e.g., 'USD', 'SGD')."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['USD', 'SGD'] # Adjust if other currencies are expected
+      - name: amount_usd
+        description: "The transaction amount converted to US Dollars. SGD amounts are converted using a fixed rate (0.74), while USD amounts remain unchanged."
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_be_of_type:
+        #       column_type: numeric
+        #   - dbt_expectations.expect_column_values_to_be_positive
+      - name: branch_marker
+        description: "A categorical marker indicating the likely branch based on the transaction currency ('USD_BRANCH', 'SGD_BRANCH', or 'UNKNOWN_BRANCH')."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['USD_BRANCH', 'SGD_BRANCH', 'UNKNOWN_BRANCH']

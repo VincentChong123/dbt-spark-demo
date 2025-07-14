@@ -1,0 +1,11 @@
+# models/seeds.yml (or seeds.yml in your project root)
+version: 2
+
+# models:
+  # - name: 
+      # test: 
+      #   -
+seeds:
+  - name: raw__transactions
+    tests:
+      - test_all_columns_non_null: {} # Apply our custom test

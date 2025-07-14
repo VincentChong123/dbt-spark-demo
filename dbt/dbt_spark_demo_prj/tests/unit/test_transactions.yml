@@ -17,7 +17,7 @@ unit_tests:
     given:
       - input: ref('raw__transactions')
         rows:
-          - {id: 2, amount: 100, currency: 'SGD', status: 'ACTIVE'}
+          - {id: 2, amount: 100, currency: 'SGD1', status: 'ACTIVE'}
     expect:
       rows:
         - {id: 2, amount_usd: 74, branch_marker: "SGD_BRANCH"}
